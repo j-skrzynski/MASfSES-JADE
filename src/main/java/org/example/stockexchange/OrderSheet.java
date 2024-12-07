@@ -4,10 +4,7 @@ import org.example.stockexchange.settlements.BuyerSettlement;
 import org.example.stockexchange.settlements.SellerSettlement;
 import org.example.stockexchange.settlements.SettlementCreator;
 import org.example.stockexchange.settlements.TransactionSettlement;
-import org.example.stockexchange.utils.CurrentDate;
-import org.example.stockexchange.utils.OrderType;
-import org.example.stockexchange.utils.PriceTracker;
-import org.example.stockexchange.utils.StockSymbol;
+import org.example.stockexchange.utils.*;
 import org.glassfish.pfl.basic.contain.Pair;
 
 import java.util.LinkedList;
@@ -30,7 +27,11 @@ public class OrderSheet {
 
     private Queue<TransactionSettlement> settlementsToSend;
 
-    public OrderSheet(StockSymbol symbol) {
+    private String exchangeName;
+
+    private ExchangeOrderingID lastId;
+
+    public OrderSheet(StockSymbol symbol, String exchangeName) {
         buyOrders = new PriorityQueue<>(new OrderComparator());
         sellOrders = new PriorityQueue<>(new OrderComparator().reversed());
 
@@ -38,21 +39,22 @@ public class OrderSheet {
         noLimitBuy = new LinkedList<>();
 
         awaitingActivationBuy = new PriorityQueue<>(new AwaitingOrderComparator());
-        awaitingActivationSell = new PriorityQueue<>(new AwaitingOrderComparator());
+        awaitingActivationSell = new PriorityQueue<>(new AwaitingOrderComparator().reversed());
 
-        priceTracker = new PriceTracker(symbol);
+        priceTracker = new PriceTracker(symbol,exchangeName);
         this.symbol = symbol;
 
         settlementsToSend = new LinkedList<>();
+        lastId = ExchangeOrderingID.getZero();
     }
 
     private void saveTransaction(BuyerSettlement buyerSettlement, SellerSettlement sellerSettlement) {
         settlementsToSend.add(sellerSettlement);
         settlementsToSend.add(buyerSettlement);
-        if(buyerSettlement.getQuantity() != sellerSettlement.getQuantity() || buyerSettlement.getUnitPrice() != sellerSettlement.getUnitPrice()) {
+        if(buyerSettlement.getQuantity() != sellerSettlement.getQuantity() || !buyerSettlement.getUnitPrice().equals(sellerSettlement.getUnitPrice())){
             throw new RuntimeException("Buyer/Seller settlement does not match");
         }
-        this.priceTracker.submitData(buyerSettlement.getUnitPrice(), buyerSettlement.getQuantity());
+        this.priceTracker.submitData(buyerSettlement.getUnitPrice(), buyerSettlement.getQuantity(),buyerSettlement.getAddressee(),sellerSettlement.getAddressee());
     }
 
     private Double getReferencePrice(){
@@ -65,6 +67,8 @@ public class OrderSheet {
     }
 
     private void placeSell(Order o){
+        lastId = lastId.next();
+        o.setSeqId(lastId);
         Double lastPriceFixing = null;
         //w pierwszej kolejności wykonujemy zlecenia PKC
         //Problemem jest że nie wiem jak obliczyć cenę, przyjmę więc max cenę oferty i maksymalne zlecenie
@@ -118,6 +122,8 @@ public class OrderSheet {
     }
 
     private void placeBuy(Order o) {
+        lastId = lastId.next();
+        o.setSeqId(lastId);
         Double lastPriceFixing = null;
         while(!noLimitBuy.isEmpty() && o.getQuantity()>0){
             Order topBuyOrder = noLimitBuy.peek();
@@ -172,6 +178,10 @@ public class OrderSheet {
         }
     }
 
+    private void placeAwaitingOrder(AwaitingOrder o) {
+
+    }
+
     private void updateAwaitingOrders(Double lastPrice){
         while(!awaitingActivationBuy.isEmpty() && awaitingActivationBuy.peek().getActivationPrice()>=lastPrice){
             placeBuy(awaitingActivationBuy.poll().getActivatedOrder());
@@ -181,7 +191,7 @@ public class OrderSheet {
         }
     }
 
-    private void expire(CurrentDate date){
+    private void expire(ExchangeDate date){
         buyOrders.removeIf(order -> order.isExpired(date));
         sellOrders.removeIf(order -> order.isExpired(date));
         noLimitBuy.removeIf(order -> order.isExpired(date));

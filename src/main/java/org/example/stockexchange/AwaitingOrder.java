@@ -4,14 +4,16 @@ public class AwaitingOrder {
 
     /// This order is going to be released after activation
     private Order order;
-
-    public boolean isActivatedBy(){
-        return true;
-    }
+    private Double activationPrice;
+//    public boolean isActivatedBy(){
+//        return true;
+//    }
 
     public Order getActivatedOrder(){
-        return null;
+        return order;
     }
 
-    public Double getActivationPrice(){}
+    public Double getActivationPrice(){
+        return activationPrice;
+    }
 }

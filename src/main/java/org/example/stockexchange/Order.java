@@ -8,9 +8,10 @@ public class Order {
     private StockSymbol symbol;
     private int quantity;
     private Double price;   // null - no limit so pkc; value is the limit
-    private ExpirationDate expirationDate;
+    private ExchangeDate expirationDate;
     private OrderType orderType;
     private OrderSubmitter submitter;
+    private ExchangeOrderingID seqId = null;
 
     public Order(StockSymbol symbol, OrderType orderType) {
         this.symbol = symbol;
@@ -29,7 +30,7 @@ public class Order {
         return price;
     }
 
-    public ExpirationDate getExpirationDate() {
+    public ExchangeDate getExpirationDate() {
         return expirationDate;
     }
 
@@ -49,8 +50,16 @@ public class Order {
         return true;
     }
 
-    public boolean isExpired(CurrentDate date){
+    public boolean isExpired(ExchangeDate date){
+        return expirationDate.isBeforeOrEqual(date);
+    }
 
+    public void setSeqId(ExchangeOrderingID seqId) {
+        this.seqId = seqId;
+    }
+
+    public ExchangeOrderingID getSeqId() {
+        return seqId;
     }
 }
 

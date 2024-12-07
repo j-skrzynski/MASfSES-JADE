@@ -6,12 +6,12 @@ public class AwaitingOrderComparator implements Comparator<AwaitingOrder> {
 
     @Override
     public int compare(AwaitingOrder o1, AwaitingOrder o2) {
-        return 0;
+        return Double.compare(o1.getActivationPrice(), o2.getActivationPrice());
     }
 
     @Override
     public boolean equals(Object obj) {
-        return false;
+        return this == obj;
     }
 
     @Override
