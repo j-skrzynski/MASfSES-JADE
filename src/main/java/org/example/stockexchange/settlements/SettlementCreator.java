@@ -1,6 +1,6 @@
 package org.example.stockexchange.settlements;
 
-import org.example.stockexchange.Order;
+import org.example.stockexchange.order.Order;
 import org.glassfish.pfl.basic.contain.Pair;
 
 public class SettlementCreator {

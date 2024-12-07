@@ -1,5 +1,9 @@
 package org.example.stockexchange;
 
+import org.example.stockexchange.order.AwaitingOrder;
+import org.example.stockexchange.order.AwaitingOrderComparator;
+import org.example.stockexchange.order.Order;
+import org.example.stockexchange.order.OrderComparator;
 import org.example.stockexchange.settlements.BuyerSettlement;
 import org.example.stockexchange.settlements.SellerSettlement;
 import org.example.stockexchange.settlements.SettlementCreator;
@@ -81,6 +85,9 @@ public class OrderSheet {
             int tradedQuantity = Math.min(o.getQuantity(), topBuyOrder.getQuantity());
             o.reduceQuantity(tradedQuantity);
             topBuyOrder.reduceQuantity(tradedQuantity);
+            if (topBuyOrder.getQuantity() == 0) {
+                noLimitBuy.poll();
+            }
             Pair<BuyerSettlement, SellerSettlement> settlements = SettlementCreator.createSettlement(topBuyOrder, o, transactionUnitPrice);
             // Zapisz transakcje
             this.saveTransaction(settlements.first(), settlements.second());
@@ -125,8 +132,8 @@ public class OrderSheet {
         lastId = lastId.next();
         o.setSeqId(lastId);
         Double lastPriceFixing = null;
-        while(!noLimitBuy.isEmpty() && o.getQuantity()>0){
-            Order topBuyOrder = noLimitBuy.peek();
+        while(!noLimitSell.isEmpty() && o.getQuantity()>0){
+            Order topBuyOrder = noLimitSell.peek();
             Double transactionUnitPrice = o.getPrice();
             if(!o.hasPriceLimit()){
                 transactionUnitPrice = getReferencePrice();//transactionUnitPrice = Math.min(transactionUnitPrice, buyOrders.peek().getPrice());
@@ -134,6 +141,9 @@ public class OrderSheet {
             int tradedQuantity = Math.min(o.getQuantity(), topBuyOrder.getQuantity());
             o.reduceQuantity(tradedQuantity);
             topBuyOrder.reduceQuantity(tradedQuantity);
+            if (topBuyOrder.getQuantity() == 0) {
+                noLimitSell.poll();
+            }
             Pair<BuyerSettlement, SellerSettlement> settlements = SettlementCreator.createSettlement(topBuyOrder, o, transactionUnitPrice);
             // Zapisz transakcje
             this.saveTransaction(settlements.first(), settlements.second());
@@ -179,7 +189,12 @@ public class OrderSheet {
     }
 
     private void placeAwaitingOrder(AwaitingOrder o) {
-
+        if (o.getActivatedOrder().getOrderType() == OrderType.BUY) {
+            awaitingActivationBuy.add(o);
+        }
+        else if (o.getActivatedOrder().getOrderType() == OrderType.SELL) {
+            awaitingActivationSell.add(o);
+        }
     }
 
     private void updateAwaitingOrders(Double lastPrice){
