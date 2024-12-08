@@ -1,5 +1,6 @@
 package org.example.agents.stockexchange;
 
+import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -8,10 +9,7 @@ import org.example.stockexchange.order.AwaitingOrder;
 import org.example.stockexchange.order.NoLimitOrder;
 import org.example.stockexchange.order.Order;
 import org.example.stockexchange.order.PlacableDisposition;
-import org.example.stockexchange.utils.ExchangeDate;
-import org.example.stockexchange.utils.OrderExpirationType;
-import org.example.stockexchange.utils.OrderType;
-import org.example.stockexchange.utils.StockSymbol;
+import org.example.stockexchange.utils.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +30,10 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
             ACLMessage reply = msg.createReply();
 
             try {
-                String response = handleRequest(content);
+                AID sender = msg.getSender();
+                String response = handleRequest(content,sender);
+
+
                 reply.setPerformative(ACLMessage.INFORM);
                 reply.setContent(response);
             } catch (Exception e) {
@@ -48,8 +49,9 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
 
 
 
-    private String handleRequest(String content) throws Exception {
-        String[] parts = content.split(";");
+    private String handleRequest(String content,AID sender) throws Exception {
+        String[] comd = content.split("#");
+        String[] parts = comd[1].split(";");
         String command = parts[0];
 
         switch (command) {
@@ -61,7 +63,8 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
 
                 return addStock(long_name,short_name,IPOPrice,shares);
             case "PLACE_ORDER":
-                return processOrderCommand(parts);
+                OrderSubmitter submitter = new OrderSubmitter(comd[0],sender);
+                return processOrderCommand(parts,submitter);
 //                String orderCommand = parts[1];
 //                String orderType = parts[2];
 //
@@ -134,14 +137,14 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
 
     }
 
-    private String processOrderCommand(String[] parts) {
+    private String processOrderCommand(String[] parts,OrderSubmitter submitter) {
         String orderCommand = parts[1];
         OrderType orderType = OrderType.fromString(parts[2]);
         String expirtationSpecicication = parts[3];
 
         String symbolShortName = parts[4];
         Integer quantity = Integer.parseInt(parts[5]);
-        StockSymbol symbol = agent.getStockExchange().getSymbolByShort(symbolShortName);
+        StockSymbol symbol = agent.getStockExchange().getSymbolByShortName(symbolShortName);
         ExchangeDate expirationDate = processExpirationSpecification(expirtationSpecicication);
 
         Double price;
@@ -150,19 +153,19 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
         switch (orderCommand) {
             case "LIMIT":
                 price = Double.parseDouble(parts[6]);
-                disposition = new Order(symbol,orderType,expirationDate,price,quantity);
+                disposition = new Order(symbol,orderType,expirationDate,price,quantity,submitter);
                 break;
             case "NOLIMIT":
-                disposition = new NoLimitOrder(symbol,orderType,expirationDate,quantity);
+                disposition = new NoLimitOrder(symbol,orderType,expirationDate,quantity,submitter);
                 break;
             case "STOP":
                 activationPrice = Double.parseDouble(parts[6]);
-                disposition = new AwaitingOrder(new NoLimitOrder(symbol,orderType,expirationDate,quantity),activationPrice);
+                disposition = new AwaitingOrder(new NoLimitOrder(symbol,orderType,expirationDate,quantity,submitter),activationPrice);
                 break;
             case "STOPLIMIT":
                 price = Double.parseDouble(parts[6]);
                 activationPrice = Double.parseDouble(parts[7]);
-                disposition = new AwaitingOrder(new Order(symbol,orderType,expirationDate,price,quantity),activationPrice);
+                disposition = new AwaitingOrder(new Order(symbol,orderType,expirationDate,price,quantity,submitter),activationPrice);
                 break;
         }
         agent.getStockExchange().placeOrder(symbol,disposition);
@@ -188,13 +191,13 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
     }
 
     private String getTopBuy(String symbolShortName) {
-        StockSymbol stockSymbol = agent.getStockExchange().getSymbolByShort(symbolShortName);
+        StockSymbol stockSymbol = agent.getStockExchange().getSymbolByShortName(symbolShortName);
         List<Order> orders = agent.getStockExchange().getTopBuyOffers(stockSymbol);
         return "Top Buy Offers: " + orders.toString();
     }
 
     private String getTopSell(String symbolShortName) {
-        StockSymbol stockSymbol = agent.getStockExchange().getSymbolByShort(symbolShortName);
+        StockSymbol stockSymbol = agent.getStockExchange().getSymbolByShortName(symbolShortName);
         List<Order> orders = agent.getStockExchange().getTopSellOffers(stockSymbol);
         return "Top Sell Offers: " + orders.toString();
     }

@@ -1,5 +1,6 @@
 package org.example.stockexchange.settlements;
 
+import com.google.gson.Gson;
 import org.example.stockexchange.utils.OrderSubmitter;
 import org.example.stockexchange.utils.StockSymbol;
 
@@ -56,5 +57,9 @@ public class TransactionSettlement {
 
     public int getQuantity() {
         return quantity;
+    }
+    public String toJson() {
+        Gson gson = new Gson();
+        return gson.toJson(this);
     }
 }

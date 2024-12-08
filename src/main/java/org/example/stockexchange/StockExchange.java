@@ -9,6 +9,7 @@ import org.example.stockexchange.settlements.TransactionSettlement;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class StockExchange {
 
@@ -16,14 +17,33 @@ public class StockExchange {
     private final Map<StockSymbol, OrderSheet> orderSheets;
     private ExchangeDate currentSessionStart;
     private Long millisecondsSinceStart;
+    private Long millisecondsPerSession;
+    private Long sessionsPerYear;
 
-    public StockExchange(String name, ExchangeDate lastSessionClosingDate) {
+
+
+    public StockExchange(String name, ExchangeDate lastSessionClosingDate, Long millisecondsPerSession, Long sessionsPerYear) {
         this.name = name;
         this.orderSheets = new HashMap<>();
         this.currentSessionStart = lastSessionClosingDate;
+        this.millisecondsPerSession = millisecondsPerSession;
+        this.sessionsPerYear = sessionsPerYear;
     }
-    public StockExchange(String name){
-        this(name, new ExchangeDate());
+    public StockExchange(String name, Long millisecondsPerSession, Long sessionsPerYear){
+        this(name, new ExchangeDate(),millisecondsPerSession,sessionsPerYear);
+    }
+
+    public Set<StockSymbol> getAllStocksInExchange(){
+        return orderSheets.keySet();
+    }
+
+    public StockSymbol getSymbolByShortName(String shortName) {
+        for (StockSymbol symbol : orderSheets.keySet()) {
+            if (symbol.getShortName().equals(shortName)) {
+                return symbol;
+            }
+        }
+        throw new IllegalArgumentException("No such symbol: " + shortName);
     }
 
     /**
@@ -139,9 +159,14 @@ public class StockExchange {
     }
 
     public Long getSessionsTillYearEnd(){
-
+        return sessionsPerYear-(currentSessionStart.getSessionId() % sessionsPerYear);
     }
-    public StockSymbol getSymbolByShort(String shortName) {
 
+    public Long getMillisecondsPerSession() {
+        return millisecondsPerSession;
+    }
+
+    public Long getSessionsPerYear() {
+        return sessionsPerYear;
     }
 }

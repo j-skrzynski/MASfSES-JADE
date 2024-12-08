@@ -13,12 +13,13 @@ public class Order implements PlacableDisposition{
     private OrderSubmitter submitter;
     private ExchangeOrderingID seqId = null;
 
-    public Order(StockSymbol symbol, OrderType orderType, ExchangeDate expirationDate, Double price, int quantity) {
+    public Order(StockSymbol symbol, OrderType orderType, ExchangeDate expirationDate, Double price, int quantity,OrderSubmitter submitter) {
         this.symbol = symbol;
         this.orderType = orderType;
         this.expirationDate = expirationDate;
         this.price = price;
         this.quantity = quantity;
+        this.submitter = submitter;
     }
 
     public StockSymbol getSymbol() {
