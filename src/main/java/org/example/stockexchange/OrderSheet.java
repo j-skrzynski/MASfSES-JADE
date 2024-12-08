@@ -9,9 +9,24 @@ import org.example.stockexchange.utils.*;
 import org.glassfish.pfl.basic.contain.Pair;
 
 import java.util.*;
+import java.util.logging.*;
 
 public class OrderSheet {
 
+    private static final Logger logger = Logger.getLogger(OrderSheet.class.getName());
+    static{
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        consoleHandler.setLevel(Level.INFO); // Log messages at INFO level or higher
+        logger.addHandler(consoleHandler);
+        try {
+            FileHandler fileHandler = new FileHandler("orders.log", true); // Append to the log file
+            fileHandler.setFormatter(new SimpleFormatter()); // Add a simple text formatter
+            logger.addHandler(fileHandler);
+        } catch (Exception e) {
+            logger.severe("Failed to set up file handler: " + e.getMessage());
+        }
+
+    }
     private Queue<Order> buyOrders;
     private Queue<Order> sellOrders;
 
@@ -69,6 +84,7 @@ public class OrderSheet {
         lastId = lastId.next();
         o.setSeqId(lastId);
         Double lastPriceFixing = null;
+        logger.info("Incomming SELL "+o.toString());
         //w pierwszej kolejności wykonujemy zlecenia PKC
         //Problemem jest że nie wiem jak obliczyć cenę, przyjmę więc max cenę oferty i maksymalne zlecenie
         while(!noLimitBuy.isEmpty() && o.getQuantity()>0){
@@ -78,6 +94,7 @@ public class OrderSheet {
                 transactionUnitPrice = getReferencePrice();//Math.min(transactionUnitPrice, buyOrders.peek().getPrice());
             }
             int tradedQuantity = Math.min(o.getQuantity(), topBuyOrder.getQuantity());
+            logger.info("Incomming SELL "+o.toString()+" matched with "+topBuyOrder.toString()+" in against NOLimit phase. Sold " + tradedQuantity + "@" + transactionUnitPrice);
             o.reduceQuantity(tradedQuantity);
             topBuyOrder.reduceQuantity(tradedQuantity);
             if (topBuyOrder.getQuantity() == 0) {
@@ -87,20 +104,22 @@ public class OrderSheet {
             // Zapisz transakcje
             this.saveTransaction(settlements.first(), settlements.second());
             lastPriceFixing=transactionUnitPrice;
-        }
 
+        }
+        logger.info("Incomming SELL "+o.toString()+" passed NOLimit phase");
         //Jeśli są jakiekolwiek buy pasujące
         while(!buyOrders.isEmpty() && o.getQuantity()>0 && buyOrders.peek().getPrice()>=o.getPrice()){
             // Dopuki są chętni do zakupu, mamy co sprzedawać i kupujący oferują więcej/= niż my chcemy dostać
             //wykonać za co najmniej naszą cenę
             Order topBuyOrder = buyOrders.peek();
             int tradedQuantity = Math.min(o.getQuantity(), topBuyOrder.getQuantity());
-
+            Double unitPrice = topBuyOrder.getPrice(); // być może min z tej ceny i ostatniej rynkowej jakny sam pkc był
+            logger.info("Incomming SELL "+o.toString()+" matched with "+topBuyOrder.toString()+" in against Limit phase. Sold " + tradedQuantity + "@" + unitPrice);
             // Wykonanie transakcji
             o.reduceQuantity(tradedQuantity);
             topBuyOrder.reduceQuantity(tradedQuantity);
 
-            Double unitPrice = topBuyOrder.getPrice(); // być może min z tej ceny i ostatniej rynkowej jakny sam pkc był
+
 
             Pair<BuyerSettlement, SellerSettlement> settlements = SettlementCreator.createSettlement(topBuyOrder, o, unitPrice);
 
@@ -113,12 +132,17 @@ public class OrderSheet {
             }
             lastPriceFixing=unitPrice;
         }
+        logger.info("Incomming SELL "+o.toString()+" passed Limit phase");
         if(o.getQuantity()>0){
+            logger.info("Incomming SELL "+o.toString()+" remains not fully executed - saving phase");
             if(!o.hasPriceLimit()){
                 noLimitSell.add(o);
             }else {
                 sellOrders.add(o);
             }
+        }
+        else{
+            logger.info("Incomming SELL "+o.toString()+" was fully executed");
         }
         updateAwaitingOrders(lastPriceFixing);
     }
@@ -126,32 +150,38 @@ public class OrderSheet {
     private void placeBuy(Order o) {
         lastId = lastId.next();
         o.setSeqId(lastId);
+        logger.info("Incomming BUY "+o.toString());
         Double lastPriceFixing = null;
         while(!noLimitSell.isEmpty() && o.getQuantity()>0){
-            Order topBuyOrder = noLimitSell.peek();
+            Order topSellOrder = noLimitSell.peek();
             Double transactionUnitPrice = o.getPrice();
             if(!o.hasPriceLimit()){
                 transactionUnitPrice = getReferencePrice();//transactionUnitPrice = Math.min(transactionUnitPrice, buyOrders.peek().getPrice());
             }
-            int tradedQuantity = Math.min(o.getQuantity(), topBuyOrder.getQuantity());
+            int tradedQuantity = Math.min(o.getQuantity(), topSellOrder.getQuantity());
+            logger.info("Incomming BUY "+o.toString()+" matched with "+topSellOrder.toString()+" in against NOLimit phase. Sold " + tradedQuantity + "@" + transactionUnitPrice);
+
             o.reduceQuantity(tradedQuantity);
-            topBuyOrder.reduceQuantity(tradedQuantity);
-            if (topBuyOrder.getQuantity() == 0) {
+            topSellOrder.reduceQuantity(tradedQuantity);
+            if (topSellOrder.getQuantity() == 0) {
                 noLimitSell.poll();
             }
-            Pair<BuyerSettlement, SellerSettlement> settlements = SettlementCreator.createSettlement(topBuyOrder, o, transactionUnitPrice);
+            Pair<BuyerSettlement, SellerSettlement> settlements = SettlementCreator.createSettlement(o,topSellOrder, transactionUnitPrice);
             // Zapisz transakcje
             this.saveTransaction(settlements.first(), settlements.second());
             lastPriceFixing = transactionUnitPrice;
         }
+        logger.info("Incomming BUY "+o.toString()+" passed NOLimit phase");
         while (!sellOrders.isEmpty() && o.getQuantity() > 0 && sellOrders.peek().getPrice() <= o.getPrice()) {
             Order topSellOrder = sellOrders.peek();
             int tradedQuantity = Math.min(o.getQuantity(), topSellOrder.getQuantity());
+            Double unitPrice = topSellOrder.getPrice();
+            logger.info("Incomming BUY "+o.toString()+" matched with "+topSellOrder.toString()+" in against Limit phase. Sold " + tradedQuantity + "@" + unitPrice);
 
             o.reduceQuantity(tradedQuantity);
             topSellOrder.reduceQuantity(tradedQuantity);
 
-            Double unitPrice = topSellOrder.getPrice();
+
 
             Pair<BuyerSettlement, SellerSettlement> settlements = SettlementCreator.createSettlement(o, topSellOrder, unitPrice);
 
@@ -164,13 +194,17 @@ public class OrderSheet {
             }
             lastPriceFixing = unitPrice;
         }
-
+        logger.info("Incomming BUY "+o.toString()+" passed Limit phase");
         if (o.getQuantity() > 0) {
+            logger.info("Incomming BUY "+o.toString()+" remains not fully executed - saving phase");
             if(!o.hasPriceLimit()){
                 noLimitBuy.add(o);
             }else {
                 buyOrders.add(o);
             }
+        }
+        else{
+            logger.info("Incomming BUY "+o.toString()+" was fully executed");
         }
         updateAwaitingOrders(lastPriceFixing);
     }
@@ -212,7 +246,7 @@ public class OrderSheet {
     }
 
     public void placeDisposition(PlacableDisposition disposition){
-        if (disposition.isAwaiting()){
+        if (!disposition.isAwaiting()){
             placeOrder((Order) disposition);
         }
         else{

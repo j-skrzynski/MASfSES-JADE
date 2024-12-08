@@ -25,6 +25,8 @@ public class TransactionSettlement {
         this.symbol = symbol;
         this.soldStock = soldStock;
         this.boughtStock = boughtStock;
+        this.unitPrice = unitPrice;
+        this.quantity = quantity;
     }
 
     public OrderSubmitter getAddressee() {

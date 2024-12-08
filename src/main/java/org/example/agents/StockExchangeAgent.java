@@ -40,28 +40,4 @@ public class StockExchangeAgent extends Agent {
         addBehaviour(new SettlementSendingBehaviour(this,1000));
     }
 
-    /**
-     * Broadcast available settlements to all agents in the system.
-     */
-//    private void broadcastSettlements() {
-////        for (StockSymbol symbol : stockExchange.getAvailableSymbols()) {
-////            TransactioanSettlement settlement = stockExchange.popNextSettlement(symbol);
-////
-////            while (settlement != null) {
-////                ACLMessage broadcast = new ACLMessage(ACLMessage.INFORM);
-////                broadcast.setContent("Settlement: " + settlement.toString());
-////
-////                // Broadcast to all agents
-////                for (AID aid : getAllAgentAIDs()) {
-////                    broadcast.addReceiver(aid);
-////                }
-////
-////                send(broadcast);
-////
-////                // Fetch the next settlement for this symbol
-////                settlement = stockExchange.popNextSettlement(symbol);
-////            }
-////        }
-//    }
-
 }

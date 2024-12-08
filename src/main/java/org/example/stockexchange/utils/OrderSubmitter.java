@@ -16,7 +16,7 @@ public class OrderSubmitter {
     }
 
     public OrderSubmitter(String submitterName, AID broker){
-        this(submitterName,broker.toString(),broker);
+        this(submitterName,broker.getName(),broker);
     }
 
     public AID getBroker() {

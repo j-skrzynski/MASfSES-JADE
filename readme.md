@@ -30,4 +30,12 @@ expirationSpecification::=  D
                             WDD/<numberOfSessions>
                             WDA
                             WDC/<numberOfSessions>/<numberOfMilliseconds>
+
+
+
+#ADD_STOCK;TestStock;XD;20;1000
+#ADD_STOCK;nazwa dluga;skrot;ipo price;ilosc udzialow
 ```
+
+Trader1#PLACE_ORDER;LIMIT;SELL;WDD/5;XD;100;102
+Trader2#PLACE_ORDER;NOLIMIT;BUY;WDD/5;XD;100

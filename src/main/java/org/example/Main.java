@@ -4,7 +4,9 @@ import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
 import jade.wrapper.AgentContainer;
+import jade.wrapper.AgentController;
 import jade.wrapper.ControllerException;
+import org.example.agents.StockExchangeAgent;
 
 public class Main {
     public static void main(String[] args) {
@@ -18,6 +20,18 @@ public class Main {
         try {
             mainContainer.start();
             System.out.println("JADE container started!");
+
+
+            Object[] agentArgs = {"GPW Exchange"}; // Argumenty przekazywane do agenta
+            AgentController gpwAgent = mainContainer.createNewAgent(
+                    "GPW",                      // Nazwa agenta
+                    StockExchangeAgent.class.getName(), // Klasa agenta
+                    agentArgs                  // Argumenty agenta
+            );
+
+            gpwAgent.start();
+            System.out.println("GPW agent started!");
+
         } catch (ControllerException e) {
             e.printStackTrace();
         }
