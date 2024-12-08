@@ -10,6 +10,7 @@ import org.example.stockexchange.order.Order;
 import org.example.stockexchange.order.PlacableDisposition;
 import org.example.stockexchange.utils.*;
 
+import javax.naming.directory.InvalidAttributesException;
 import java.util.List;
 
 
@@ -48,11 +49,20 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
 
     private String handleRequest(String content,AID sender) throws Exception {
         String[] comd = content.split("#");
+        if (comd.length != 2) {
+            throw new IllegalArgumentException("Invalid request. <trader>#<command> was expected. Hash must appear exactly once separating sender from the command");
+        }
         String[] parts = comd[1].split(";");
+        if (parts.length < 1) {
+            throw new IllegalArgumentException("Command not provided. After # the command specification is expected. It is semicoln-separated. First element is command name");
+        }
         String command = parts[0];
 
         switch (command) {
             case "ADD_STOCK":
+                if(parts.length<5){
+                    throw new IllegalArgumentException("ADD_STOCK requires at 5 parameters. Usage: <traderName>#ADD_STOCK;<long name>;<short name>;<ipo price>;<total number of shares>  In this request <traderName> mat be empty");
+                }
                 String long_name = parts[1];
                 String short_name = parts[2];
                 Double IPOPrice = Double.parseDouble(parts[3]);
@@ -70,8 +80,14 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
             case "ADVANCE_SESSION":
                 return advanceSession();
             case "GET_TOP_BUY":
+                if (parts.length != 2) {
+                    throw new IllegalArgumentException("GET_TOP_BUY requires a single parameter - stock short name");
+                }
                 return getTopBuy(parts[1]);
             case "GET_TOP_SELL":
+                if (parts.length != 2) {
+                    throw new IllegalArgumentException("GET_TOP_SELL requires a single parameter - stock short name");
+                }
                 return getTopSell(parts[1]);
             default:
                 throw new IllegalArgumentException("Unknown command: " + command);
@@ -102,7 +118,7 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
 
             case WDD:
                 if (parts.length < 2) {
-                    throw new IllegalArgumentException("WDD type requires number of sessions specified");
+                    throw new IllegalArgumentException("WDD type requires number of sessions specified. Usage: WDD/<numberOfSessions>");
                 }
                 long sessionsCount = Long.parseLong(parts[1]);
                 long sessionsTillYearEnd = agent.getStockExchange().getSessionsTillYearEnd();
@@ -114,7 +130,7 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
 
             case WDC:
                 if (parts.length < 3) {
-                    throw new IllegalArgumentException("WDC type requires number of sessions and milliseconds specified");
+                    throw new IllegalArgumentException("WDC type requires number of sessions and milliseconds specified. Usage: WDC/<numberOfSessions>/<numberOfMilliseconds>");
                 }
                 long sessions = Long.parseLong(parts[1]);
                 long milliseconds = Long.parseLong(parts[2]);
@@ -135,6 +151,10 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
     }
 
     private String processOrderCommand(String[] parts,OrderSubmitter submitter) {
+        if (parts.length < 6) {
+            throw new IllegalArgumentException("Orders commands require at least 6 parameters. Usage: <traderName>#PLACE_ORDER;<orderName>;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>;...");
+        }
+
         String orderCommand = parts[1];
         OrderType orderType = OrderType.fromString(parts[2]);
         String expirtationSpecicication = parts[3];
@@ -149,6 +169,9 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
         PlacableDisposition disposition=null;
         switch (orderCommand) {
             case "LIMIT":
+                if (parts.length < 7) {
+                    throw new IllegalArgumentException("Limit specification cannot be empty. Usage: <traderName>#PLACE_ORDER;LIMIT;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>;<price>");
+                }
                 price = Double.parseDouble(parts[6]);
                 disposition = new Order(symbol,orderType,expirationDate,price,quantity,submitter);
                 break;
@@ -156,10 +179,16 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
                 disposition = new NoLimitOrder(symbol,orderType,expirationDate,quantity,submitter);
                 break;
             case "STOP":
+                if (parts.length < 7) {
+                    throw new IllegalArgumentException("Activation price specification cannot be empty. Usage: <traderName>#PLACE_ORDER;STOP;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>;<activationPrice>");
+                }
                 activationPrice = Double.parseDouble(parts[6]);
                 disposition = new AwaitingOrder(new NoLimitOrder(symbol,orderType,expirationDate,quantity,submitter),activationPrice);
                 break;
             case "STOPLIMIT":
+                if (parts.length < 8) {
+                    throw new IllegalArgumentException("Missing arguments. Usage: <traderName>#PLACE_ORDER;STOPLIMIT;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>;<price>;<activationPrice>");
+                }
                 price = Double.parseDouble(parts[6]);
                 activationPrice = Double.parseDouble(parts[7]);
                 disposition = new AwaitingOrder(new Order(symbol,orderType,expirationDate,price,quantity,submitter),activationPrice);
