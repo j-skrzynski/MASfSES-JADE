@@ -13,6 +13,7 @@ public class OrderSubmitter {
     public OrderSubmitter(String submitterName, String submitterBroker, AID broker){
         this.submitterName = submitterName;
         this.submitterBroker = submitterBroker;
+        this.broker = broker;
     }
 
     public OrderSubmitter(String submitterName, AID broker){

@@ -5,10 +5,7 @@ import org.glassfish.pfl.basic.contain.Pair;
 
 public class SettlementCreator {
 
-    public static Pair<BuyerSettlement, SellerSettlement> createSettlement(Order buyer, Order seller, Double transactionUnitPrice){
-        // Znajdujemy najmniejszą ilość akcji możliwą do transakcji
-        int tradedQuantity = Math.min(buyer.getQuantity(), seller.getQuantity());
-
+    public static Pair<BuyerSettlement, SellerSettlement> createSettlement(Order buyer, Order seller, Long tradedQuantity, Double transactionUnitPrice){
         if( transactionUnitPrice > buyer.getPrice() ){
             throw new RuntimeException("Transaction price is greater than buyer price");
         }

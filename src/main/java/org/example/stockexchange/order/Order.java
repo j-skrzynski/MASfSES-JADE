@@ -7,13 +7,13 @@ public class Order implements PlacableDisposition{
     // SHOULD COVER PKC AND LIMIT
     private StockSymbol symbol;
     private OrderType orderType;
-    private int quantity;
+    private Long quantity;
     private Double price;   // null - no limit so pkc; value is the limit
     private ExchangeDate expirationDate;
     private OrderSubmitter submitter;
     private ExchangeOrderingID seqId = null;
 
-    public Order(StockSymbol symbol, OrderType orderType, ExchangeDate expirationDate, Double price, int quantity,OrderSubmitter submitter) {
+    public Order(StockSymbol symbol, OrderType orderType, ExchangeDate expirationDate, Double price, Long quantity,OrderSubmitter submitter) {
         this.symbol = symbol;
         this.orderType = orderType;
         this.expirationDate = expirationDate;
@@ -26,7 +26,7 @@ public class Order implements PlacableDisposition{
         return symbol;
     }
 
-    public int getQuantity() {
+    public Long getQuantity() {
         return quantity;
     }
 
@@ -46,7 +46,7 @@ public class Order implements PlacableDisposition{
         return submitter;
     }
 
-    public void reduceQuantity(int tradedQuantity) {
+    public void reduceQuantity(Long tradedQuantity) {
         quantity -= tradedQuantity;
     }
 

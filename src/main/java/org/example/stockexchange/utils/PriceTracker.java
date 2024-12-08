@@ -24,21 +24,21 @@ public class PriceTracker {
 
 
     private StockSymbol symbol;
-    private List<Pair<Double,Integer>> history;
+    private List<Pair<Double,Long>> history;
     private Double lastPrice;
     private String exchangeName;
 
     public PriceTracker(StockSymbol symbol,String exchangeName) {
         this.symbol = symbol;
-        this.history = new ArrayList<Pair<Double,Integer>>();
+        this.history = new ArrayList<Pair<Double,Long>>();
         this.exchangeName = exchangeName;
     }
 
-    private void logTransaction(Double price, int quantity, String buyer, String seller){
-        logger.info("["+exchangeName+"]["+symbol.getShortName()+"] "+buyer+" sold "+Integer.toString(quantity)+" to "+buyer+" unit_price "+price.toString() );
+    private void logTransaction(Double price, Long quantity, String buyer, String seller){
+        logger.info("["+exchangeName+"]["+symbol.getShortName()+"] "+seller+" sold "+Long.toString(quantity)+" to "+buyer+" unit_price "+price.toString() );
     }
 
-    public void submitData(Double price, int quantity,OrderSubmitter buyer, OrderSubmitter seller){
+    public void submitData(Double price, Long quantity,OrderSubmitter buyer, OrderSubmitter seller){
         history.add(new Pair<>(price,quantity));
         lastPrice = price;
         logTransaction(price,quantity,buyer.getLogName(),seller.getLogName());

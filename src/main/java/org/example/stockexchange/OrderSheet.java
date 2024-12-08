@@ -46,14 +46,14 @@ public class OrderSheet {
     private ExchangeOrderingID lastId;
 
     public OrderSheet(StockSymbol symbol, String exchangeName) {
-        buyOrders = new PriorityQueue<>(new OrderComparator());
-        sellOrders = new PriorityQueue<>(new OrderComparator().reversed());
+        buyOrders = new PriorityQueue<>(new OrderComparatorDescending()); // da najwięcej --- da najmniej  > descending
+        sellOrders = new PriorityQueue<>(new OrderComparatorAscending());// najtańsze --- najdroższe  > ascending
 
         noLimitSell = new LinkedList<>();
         noLimitBuy = new LinkedList<>();
 
-        awaitingActivationBuy = new PriorityQueue<>(new AwaitingOrderComparator());
-        awaitingActivationSell = new PriorityQueue<>(new AwaitingOrderComparator().reversed());
+        awaitingActivationBuy = new PriorityQueue<>(new AwaitingOrderComparatorAscending());
+        awaitingActivationSell = new PriorityQueue<>(new AwaitingOrderComparatorDescending());
 
         priceTracker = new PriceTracker(symbol,exchangeName);
         this.symbol = symbol;
@@ -93,14 +93,14 @@ public class OrderSheet {
             if(!o.hasPriceLimit()){
                 transactionUnitPrice = getReferencePrice();//Math.min(transactionUnitPrice, buyOrders.peek().getPrice());
             }
-            int tradedQuantity = Math.min(o.getQuantity(), topBuyOrder.getQuantity());
+            Long tradedQuantity = Math.min(o.getQuantity(), topBuyOrder.getQuantity());
             logger.info("Incomming SELL "+o.toString()+" matched with "+topBuyOrder.toString()+" in against NOLimit phase. Sold " + tradedQuantity + "@" + transactionUnitPrice);
             o.reduceQuantity(tradedQuantity);
             topBuyOrder.reduceQuantity(tradedQuantity);
             if (topBuyOrder.getQuantity() == 0) {
                 noLimitBuy.poll();
             }
-            Pair<BuyerSettlement, SellerSettlement> settlements = SettlementCreator.createSettlement(topBuyOrder, o, transactionUnitPrice);
+            Pair<BuyerSettlement, SellerSettlement> settlements = SettlementCreator.createSettlement(topBuyOrder, o, tradedQuantity, transactionUnitPrice);
             // Zapisz transakcje
             this.saveTransaction(settlements.first(), settlements.second());
             lastPriceFixing=transactionUnitPrice;
@@ -112,7 +112,7 @@ public class OrderSheet {
             // Dopuki są chętni do zakupu, mamy co sprzedawać i kupujący oferują więcej/= niż my chcemy dostać
             //wykonać za co najmniej naszą cenę
             Order topBuyOrder = buyOrders.peek();
-            int tradedQuantity = Math.min(o.getQuantity(), topBuyOrder.getQuantity());
+            Long tradedQuantity = Math.min(o.getQuantity(), topBuyOrder.getQuantity());
             Double unitPrice = topBuyOrder.getPrice(); // być może min z tej ceny i ostatniej rynkowej jakny sam pkc był
             logger.info("Incomming SELL "+o.toString()+" matched with "+topBuyOrder.toString()+" in against Limit phase. Sold " + tradedQuantity + "@" + unitPrice);
             // Wykonanie transakcji
@@ -121,7 +121,7 @@ public class OrderSheet {
 
 
 
-            Pair<BuyerSettlement, SellerSettlement> settlements = SettlementCreator.createSettlement(topBuyOrder, o, unitPrice);
+            Pair<BuyerSettlement, SellerSettlement> settlements = SettlementCreator.createSettlement(topBuyOrder, o, tradedQuantity, unitPrice);
 
             // Zapisz transakcje
             this.saveTransaction(settlements.first(), settlements.second());
@@ -158,7 +158,7 @@ public class OrderSheet {
             if(!o.hasPriceLimit()){
                 transactionUnitPrice = getReferencePrice();//transactionUnitPrice = Math.min(transactionUnitPrice, buyOrders.peek().getPrice());
             }
-            int tradedQuantity = Math.min(o.getQuantity(), topSellOrder.getQuantity());
+            Long tradedQuantity = Math.min(o.getQuantity(), topSellOrder.getQuantity());
             logger.info("Incomming BUY "+o.toString()+" matched with "+topSellOrder.toString()+" in against NOLimit phase. Sold " + tradedQuantity + "@" + transactionUnitPrice);
 
             o.reduceQuantity(tradedQuantity);
@@ -166,7 +166,7 @@ public class OrderSheet {
             if (topSellOrder.getQuantity() == 0) {
                 noLimitSell.poll();
             }
-            Pair<BuyerSettlement, SellerSettlement> settlements = SettlementCreator.createSettlement(o,topSellOrder, transactionUnitPrice);
+            Pair<BuyerSettlement, SellerSettlement> settlements = SettlementCreator.createSettlement(o,topSellOrder,tradedQuantity, transactionUnitPrice);
             // Zapisz transakcje
             this.saveTransaction(settlements.first(), settlements.second());
             lastPriceFixing = transactionUnitPrice;
@@ -174,7 +174,7 @@ public class OrderSheet {
         logger.info("Incomming BUY "+o.toString()+" passed NOLimit phase");
         while (!sellOrders.isEmpty() && o.getQuantity() > 0 && sellOrders.peek().getPrice() <= o.getPrice()) {
             Order topSellOrder = sellOrders.peek();
-            int tradedQuantity = Math.min(o.getQuantity(), topSellOrder.getQuantity());
+            Long tradedQuantity = Math.min(o.getQuantity(), topSellOrder.getQuantity());
             Double unitPrice = topSellOrder.getPrice();
             logger.info("Incomming BUY "+o.toString()+" matched with "+topSellOrder.toString()+" in against Limit phase. Sold " + tradedQuantity + "@" + unitPrice);
 
@@ -183,7 +183,7 @@ public class OrderSheet {
 
 
 
-            Pair<BuyerSettlement, SellerSettlement> settlements = SettlementCreator.createSettlement(o, topSellOrder, unitPrice);
+            Pair<BuyerSettlement, SellerSettlement> settlements = SettlementCreator.createSettlement(o, topSellOrder, tradedQuantity, unitPrice);
 
             // Zapisz transakcje
             this.saveTransaction(settlements.first(), settlements.second());

@@ -1,7 +1,6 @@
 package org.example.agents.stockexchange;
 
 import jade.core.AID;
-import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.example.agents.StockExchangeAgent;
@@ -11,12 +10,10 @@ import org.example.stockexchange.order.Order;
 import org.example.stockexchange.order.PlacableDisposition;
 import org.example.stockexchange.utils.*;
 
-import java.util.Arrays;
 import java.util.List;
 
 
 public class OrderProcessingBehaviour extends CyclicBehaviour {
-
     private StockExchangeAgent agent;
     public OrderProcessingBehaviour(StockExchangeAgent agent) {
         super(agent);
@@ -143,7 +140,7 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
         String expirtationSpecicication = parts[3];
 
         String symbolShortName = parts[4];
-        Integer quantity = Integer.parseInt(parts[5]);
+        Long quantity = Long.parseLong(parts[5]);
         StockSymbol symbol = agent.getStockExchange().getSymbolByShortName(symbolShortName);
         ExchangeDate expirationDate = processExpirationSpecification(expirtationSpecicication);
 

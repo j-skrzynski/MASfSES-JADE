@@ -6,6 +6,7 @@ import jade.core.Runtime;
 import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
 import jade.wrapper.ControllerException;
+import org.example.agents.DummyAgent;
 import org.example.agents.StockExchangeAgent;
 
 public class Main {
@@ -31,6 +32,14 @@ public class Main {
 
             gpwAgent.start();
             System.out.println("GPW agent started!");
+
+//            AgentController dummyAgent = mainContainer.createNewAgent(
+//                    "DummyAgent",
+//                    DummyAgent.class.getName(),
+//                    null
+//            );
+//            dummyAgent.start();
+//            System.out.println("DummyAgent started and sending messages!");
 
         } catch (ControllerException e) {
             e.printStackTrace();

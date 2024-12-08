@@ -12,13 +12,13 @@ public class TransactionSettlement {
     private Double toPay;
     private Double toWithdraw;
     private StockSymbol symbol;
-    private int soldStock;
-    private int boughtStock;
+    private Long soldStock;
+    private Long boughtStock;
 
     private Double unitPrice;
-    private int quantity;
+    private Long quantity;
 
-    public TransactionSettlement(OrderSubmitter addressee, Double toPay, Double toWithdraw, StockSymbol symbol, int soldStock, int boughtStock, Double unitPrice, int quantity) {
+    public TransactionSettlement(OrderSubmitter addressee, Double toPay, Double toWithdraw, StockSymbol symbol, Long soldStock, Long boughtStock, Double unitPrice, Long quantity) {
         this.addressee = addressee;
         this.toPay = toPay;
         this.toWithdraw = toWithdraw;
@@ -45,11 +45,11 @@ public class TransactionSettlement {
         return symbol;
     }
 
-    public int getSoldStock() {
+    public Long getSoldStock() {
         return soldStock;
     }
 
-    public int getBoughtStock() {
+    public Long getBoughtStock() {
         return boughtStock;
     }
 
@@ -57,7 +57,7 @@ public class TransactionSettlement {
         return unitPrice;
     }
 
-    public int getQuantity() {
+    public Long getQuantity() {
         return quantity;
     }
     public String toJson() {

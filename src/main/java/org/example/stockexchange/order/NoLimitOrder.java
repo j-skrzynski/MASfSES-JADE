@@ -7,7 +7,7 @@ import org.example.stockexchange.utils.StockSymbol;
 
 public class NoLimitOrder extends Order {
 
-    public NoLimitOrder(StockSymbol symbol, OrderType orderType, ExchangeDate expirationDate, int quantity, OrderSubmitter submitter) {
+    public NoLimitOrder(StockSymbol symbol, OrderType orderType, ExchangeDate expirationDate, Long quantity, OrderSubmitter submitter) {
             super(symbol, orderType,expirationDate,getInfValue(orderType),quantity,submitter);
     }
 
