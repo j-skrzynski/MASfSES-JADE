@@ -133,4 +133,15 @@ public class StockExchange {
     public Long getMillisecondsSinceStart() {
         return millisecondsSinceStart;
     }
+
+    public ExchangeDate getCurrentSessionStart() {
+        return new ExchangeDate(currentSessionStart);
+    }
+
+    public Long getSessionsTillYearEnd(){
+
+    }
+    public StockSymbol getSymbolByShort(String shortName) {
+
+    }
 }

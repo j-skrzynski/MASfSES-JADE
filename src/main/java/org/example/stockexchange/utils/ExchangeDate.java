@@ -15,6 +15,9 @@ public class ExchangeDate implements Comparable<ExchangeDate> {
     public ExchangeDate(Long sessionId) {
         this(sessionId, 0L);
     }
+    public ExchangeDate(ExchangeDate d) {
+        this(d.getSessionId(), d.getMiliseconds());
+    }
 
     public void addMilisecondsSeconds(Long miliseconds) {
         this.miliseconds += miliseconds;
@@ -51,4 +54,11 @@ public class ExchangeDate implements Comparable<ExchangeDate> {
         return new ExchangeDate(sessionId+1L);
     }
 
+    public Long getSessionId() {
+        return sessionId;
+    }
+
+    public Long getMiliseconds() {
+        return miliseconds;
+    }
 }

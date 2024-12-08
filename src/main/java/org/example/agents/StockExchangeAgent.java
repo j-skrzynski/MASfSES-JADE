@@ -5,6 +5,7 @@ import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
+import org.example.agents.stockexchange.OrderProcessingBehaviour;
 import org.example.agents.stockexchange.TimeHandlingBehaviour;
 import org.example.stockexchange.StockExchange;
 import org.example.stockexchange.order.Order;
@@ -34,7 +35,7 @@ public class StockExchangeAgent extends Agent {
         }
 
         addBehaviour(new TimeHandlingBehaviour(this, 1000, 180* 1000, 2000));
-
+        addBehaviour(new OrderProcessingBehaviour(this));
 
         // Add behavior to handle incoming requests
         addBehaviour(new CyclicBehaviour() {
