@@ -1,9 +1,6 @@
 package org.example.stockexchange;
 
-import org.example.stockexchange.order.AwaitingOrder;
-import org.example.stockexchange.order.AwaitingOrderComparator;
-import org.example.stockexchange.order.Order;
-import org.example.stockexchange.order.OrderComparator;
+import org.example.stockexchange.order.*;
 import org.example.stockexchange.settlements.BuyerSettlement;
 import org.example.stockexchange.settlements.SellerSettlement;
 import org.example.stockexchange.settlements.SettlementCreator;
@@ -11,9 +8,7 @@ import org.example.stockexchange.settlements.TransactionSettlement;
 import org.example.stockexchange.utils.*;
 import org.glassfish.pfl.basic.contain.Pair;
 
-import java.util.LinkedList;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import java.util.*;
 
 public class OrderSheet {
 
@@ -197,6 +192,7 @@ public class OrderSheet {
         }
     }
 
+
     private void updateAwaitingOrders(Double lastPrice){
         while(!awaitingActivationBuy.isEmpty() && awaitingActivationBuy.peek().getActivationPrice()>=lastPrice){
             placeBuy(awaitingActivationBuy.poll().getActivatedOrder());
@@ -213,5 +209,58 @@ public class OrderSheet {
         noLimitSell.removeIf(order -> order.isExpired(date));
         awaitingActivationBuy.removeIf(awaitingOrder -> awaitingOrder.getActivatedOrder().isExpired(date));
         awaitingActivationSell.removeIf(awaitingOrder -> awaitingOrder.getActivatedOrder().isExpired(date));
+    }
+
+    public void placeDisposition(PlacableDisposition disposition){
+        if (disposition.isAwaiting()){
+            placeOrder((Order) disposition);
+        }
+        else{
+            placeAwaitingOrder((AwaitingOrder) disposition);
+        }
+    }
+
+    public TransactionSettlement getNextSettlement(){
+        return settlementsToSend.peek();
+    }
+    public TransactionSettlement popNextSettlement(){
+        return settlementsToSend.poll();
+    }
+    public boolean isTransactionSettlementAvailable(){
+        return !settlementsToSend.isEmpty();
+    }
+
+    public void expirationUpdate(ExchangeDate date){
+        expire(date);
+    }
+
+    /**
+     * Retrieves the top 5 buy offers in ascending order of priority (best offers).
+     * Does not remove these offers from the queue.
+     */
+    public List<Order> getTopBuyOffers() {
+        return getTopOrders(buyOrders, 5);
+    }
+
+    /**
+     * Retrieves the top 5 sell offers in ascending order of priority (best offers).
+     * Does not remove these offers from the queue.
+     */
+    public List<Order> getTopSellOffers() {
+        return getTopOrders(sellOrders, 5);
+    }
+
+    /**
+     * Retrieves up to 'n' best orders from the provided queue without modifying it.
+     */
+    private List<Order> getTopOrders(Queue<Order> orders, int n) {
+        List<Order> topOrders = new ArrayList<>();
+        int count = 0;
+
+        for (Order order : orders) {
+            topOrders.add(order);
+            if (++count >= n) break; // Limit to 'n' orders
+        }
+        return topOrders;
     }
 }

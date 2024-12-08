@@ -2,20 +2,23 @@ package org.example.stockexchange.order;
 
 import org.example.stockexchange.utils.*;
 
-public class Order {
+public class Order implements PlacableDisposition{
 
     // SHOULD COVER PKC AND LIMIT
     private StockSymbol symbol;
+    private OrderType orderType;
     private int quantity;
     private Double price;   // null - no limit so pkc; value is the limit
     private ExchangeDate expirationDate;
-    private OrderType orderType;
     private OrderSubmitter submitter;
     private ExchangeOrderingID seqId = null;
 
-    public Order(StockSymbol symbol, OrderType orderType) {
+    public Order(StockSymbol symbol, OrderType orderType, ExchangeDate expirationDate, Double price, int quantity) {
         this.symbol = symbol;
         this.orderType = orderType;
+        this.expirationDate = expirationDate;
+        this.price = price;
+        this.quantity = quantity;
     }
 
     public StockSymbol getSymbol() {
@@ -51,7 +54,7 @@ public class Order {
     }
 
     public boolean isExpired(ExchangeDate date){
-        return expirationDate.isBeforeOrEqual(date);
+        return getExpirationDate().isBeforeOrEqual(date);
     }
 
     public void setSeqId(ExchangeOrderingID seqId) {
@@ -60,6 +63,11 @@ public class Order {
 
     public ExchangeOrderingID getSeqId() {
         return seqId;
+    }
+
+    @Override
+    public boolean isAwaiting() {
+        return false;
     }
 }
 

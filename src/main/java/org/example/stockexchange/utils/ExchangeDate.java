@@ -2,6 +2,27 @@ package org.example.stockexchange.utils;
 
 public class ExchangeDate implements Comparable<ExchangeDate> {
 
+    private Long sessionId;
+    private Long miliseconds;
+
+    public ExchangeDate(Long sessionId, Long miliseconds) {
+        this.sessionId = sessionId;
+        this.miliseconds = miliseconds;
+    }
+    public ExchangeDate() {
+        this(0L,0L);
+    }
+    public ExchangeDate(Long sessionId) {
+        this(sessionId, 0L);
+    }
+
+    public void addMilisecondsSeconds(Long miliseconds) {
+        this.miliseconds += miliseconds;
+    }
+    public void addSessions(Long sessions) {
+        this.sessionId += sessions;
+    }
+
     public boolean isAfter(ExchangeDate other) {
         return compareTo(other) > 0;
     }
@@ -21,6 +42,13 @@ public class ExchangeDate implements Comparable<ExchangeDate> {
 
     @Override
     public int compareTo(ExchangeDate o) {
-        return 0;//todo
+        int cmp = sessionId.compareTo(o.sessionId);
+        if(cmp != 0) return cmp;
+        return miliseconds.compareTo(o.miliseconds);
     }
+
+    public ExchangeDate getNexSessionDate() {
+        return new ExchangeDate(sessionId+1L);
+    }
+
 }

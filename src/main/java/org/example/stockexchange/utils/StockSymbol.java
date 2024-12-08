@@ -5,8 +5,8 @@ public class StockSymbol {
     private String longName;
     private String shortName;
     private Double IPOPrice;
-    private int shares;
-    public StockSymbol(String longName, String shortName, Double IPOPrice, int shares) {
+    private Long shares;
+    public StockSymbol(String longName, String shortName, Double IPOPrice, Long shares) {
         this.longName = longName;
         this.shortName = shortName;
         this.IPOPrice = IPOPrice;
@@ -24,7 +24,7 @@ public class StockSymbol {
         return shortName;
     }
 
-    public int getShares() {
+    public Long getShares() {
         return shares;
     }
 }

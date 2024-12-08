@@ -1,13 +1,18 @@
 package org.example.stockexchange.order;
 
-public class AwaitingOrder {
+public class AwaitingOrder implements PlacableDisposition{
+
+
 
     /// This order is going to be released after activation
     private Order order;
     private Double activationPrice;
-//    public boolean isActivatedBy(){
-//        return true;
-//    }
+
+    public AwaitingOrder(Order order, Double activationPrice) {
+        super();
+        this.order = order;
+        this.activationPrice = activationPrice;
+    }
 
     public Order getActivatedOrder(){
         return order;
@@ -15,5 +20,10 @@ public class AwaitingOrder {
 
     public Double getActivationPrice(){
         return activationPrice;
+    }
+
+    @Override
+    public boolean isAwaiting() {
+        return true;
     }
 }
