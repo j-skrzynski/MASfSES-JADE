@@ -1,6 +1,8 @@
 package org.example.logic.stockexchange.settlements;
 
 import com.google.gson.Gson;
+import org.example.datamodels.TransactionResult;
+import org.example.datamodels.WalletRecord;
 import org.example.logic.stockexchange.utils.OrderSubmitter;
 import org.example.logic.stockexchange.utils.StockSymbol;
 
@@ -62,6 +64,12 @@ public class TransactionSettlement {
     }
     public String toJson() {
         Gson gson = new Gson();
+
         return gson.toJson(this);
+    }
+    public String getTransactionResult(){
+        TransactionResult tr = new TransactionResult(this.toPay,this.toWithdraw,this.soldStock,this.boughtStock,this.symbol.getShortName(),this.addressee.getBrokerOrderId());
+        Gson gson = new Gson();
+        return gson.toJson(tr);
     }
 }

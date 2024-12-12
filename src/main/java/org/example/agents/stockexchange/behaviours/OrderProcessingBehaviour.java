@@ -69,7 +69,16 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
 
                 return addStock(long_name,short_name,IPOPrice,shares);
             case "PLACE_ORDER":
-                OrderSubmitter submitter = new OrderSubmitter(comd[0],sender);
+                String[] sender_identifiers = comd[0].split("/");
+                String investorName  = sender_identifiers[0];
+                String investorOrderId;
+                if(sender_identifiers.length < 2){
+                    investorOrderId = "";
+                }
+                else {
+                    investorOrderId = sender_identifiers[1];
+                }
+                OrderSubmitter submitter = new OrderSubmitter(investorName,sender,investorOrderId);
                 return processOrderCommand(parts,submitter);
 //                String orderCommand = parts[1];
 //                String orderType = parts[2];

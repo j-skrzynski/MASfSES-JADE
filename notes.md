@@ -14,12 +14,12 @@
 wysyłane przez brokera do giełdy
 
 ```
-<traderName>#PLACE_ORDER;<orderName>;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>;...
+<traderName>/<BrokerOrderId>#PLACE_ORDER;<orderName>;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>;...
 
-<traderName>#PLACE_ORDER;LIMIT;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>;<price>
-<traderName>#PLACE_ORDER;NOLIMIT;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>
-<traderName>#PLACE_ORDER;STOP;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>;<activationPrice>
-<traderName>#PLACE_ORDER;STOPLIMIT;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>;<price>;<activationPrice>
+<traderName>/<BrokerOrderId>#PLACE_ORDER;LIMIT;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>;<price>
+<traderName>/<BrokerOrderId>#PLACE_ORDER;NOLIMIT;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>
+<traderName>/<BrokerOrderId>#PLACE_ORDER;STOP;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>;<activationPrice>
+<traderName>/<BrokerOrderId>#PLACE_ORDER;STOPLIMIT;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>;<price>;<activationPrice>
 
 
 
@@ -37,12 +37,12 @@ expirationSpecification::=  D
 #ADD_STOCK;nazwa dluga;skrot;ipo price;ilosc udzialow
 ```
 
-Trader1#PLACE_ORDER;LIMIT;SELL;WDD/5;XD;100;102
-Trader2#PLACE_ORDER;NOLIMIT;BUY;WDD/5;XD;100
+Trader1/1#PLACE_ORDER;LIMIT;SELL;WDD/5;XD;100;102
+Trader2/1#PLACE_ORDER;NOLIMIT;BUY;WDD/5;XD;100
 
 
 
-Trader1#PLACE_ORDER;LIMIT;SELL;WDA;XD;100;102
-Trader2#PLACE_ORDER;LIMIT;SELL;WDA;XD;100;103
-Trader3#PLACE_ORDER;NOLIMIT;SELL;WDA;XD;100
-Trader4#PLACE_ORDER;LIMIT;BUY;WDA;XD;300;102
+Trader1/2#PLACE_ORDER;LIMIT;SELL;WDA;XD;100;102
+Trader2/2#PLACE_ORDER;LIMIT;SELL;WDA;XD;100;103
+Trader3/1#PLACE_ORDER;NOLIMIT;SELL;WDA;XD;100
+Trader4/1#PLACE_ORDER;LIMIT;BUY;WDA;XD;300;102

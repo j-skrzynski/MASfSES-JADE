@@ -43,7 +43,7 @@ public class SettlementSendingBehaviour extends TickerBehaviour {
             while (settlement != null) {
                 ACLMessage message = new ACLMessage(ACLMessage.INFORM);
                 logger.info("["+agent.getStockExchange().getName()+"] Sending "+settlement.toJson() + " to " + settlement.getAddressee().getBroker());
-                message.setContent(settlement.toJson());
+                message.setContent(settlement.getTransactionResult());
                 message.addReceiver(settlement.getAddressee().getBroker());
                 agent.send(message);
 
