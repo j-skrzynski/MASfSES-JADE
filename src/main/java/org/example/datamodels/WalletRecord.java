@@ -23,4 +23,8 @@ public class WalletRecord {
     public void add(Long amount) {
         this.amount += amount;
     }
+
+    public void sub(Long amount) {
+        this.amount -= amount;
+    }
 }
