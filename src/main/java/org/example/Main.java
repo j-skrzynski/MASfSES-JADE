@@ -6,8 +6,7 @@ import jade.core.Runtime;
 import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
 import jade.wrapper.ControllerException;
-import org.example.agents.DummyAgent;
-import org.example.agents.StockExchangeAgent;
+import org.example.agents.stockexchange.StockExchangeAgent;
 
 public class Main {
     public static void main(String[] args) {
