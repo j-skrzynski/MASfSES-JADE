@@ -2,10 +2,10 @@ package org.example.logic.stockexchange.order.awaitingorder;
 
 import java.util.Comparator;
 
-public class AwaitingOrderComparatorAscending implements Comparator<AwaitingOrder> {
+public class AwaitingExchangeOrderComparatorAscending implements Comparator<AwaitingExchangeOrder> {
 
     @Override
-    public int compare(AwaitingOrder o1, AwaitingOrder o2) {
+    public int compare(AwaitingExchangeOrder o1, AwaitingExchangeOrder o2) {
         return Double.compare(o1.getActivationPrice(), o2.getActivationPrice());
 //        if (cmp != 0){
 //            return cmp;

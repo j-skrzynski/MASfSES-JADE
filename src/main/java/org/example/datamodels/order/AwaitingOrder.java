@@ -10,4 +10,26 @@ public class AwaitingOrder {
         this.awaiting = awaiting;
         this.price = price;
     }
+
+    public Order getOrder() {
+        return order;
+    }
+
+    public boolean isAwaiting() {
+        return awaiting;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public String getOrderCommand(){
+        if (awaiting){
+            if(order.hasPriceLimit()){
+                return "STOPLIMIT";
+            }
+            return "STOP";
+        }
+        return order.getOrderCommand();
+    }
 }

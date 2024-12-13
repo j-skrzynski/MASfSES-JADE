@@ -1,6 +1,7 @@
 package org.example.datamodels.command;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.example.datamodels.order.AwaitingOrder;
@@ -22,8 +23,8 @@ public class CommandParser {
         try {
             JsonObject root = JsonParser.parseString(json).getAsJsonObject();
             String command = root.get("command").getAsString();
-            String stockExchangeName = root.get("stockExchangeName").getAsString();
-            JsonObject arguments = root.getAsJsonObject("arguments");
+            String stockExchangeName = root.get("exchangeName").getAsString();
+            JsonArray arguments = root.getAsJsonArray("arguments");
             String traderName = root.get("traderName").getAsString();
             String brokerName = root.get("traderName").getAsString();
 
@@ -35,17 +36,34 @@ public class CommandParser {
         }
     }
 
-    private List<Object> parseArguments(JsonObject argumentsJson) {
+    private List<Object> parseArguments(JsonArray argumentsJson) {
         List<Object> argumentsList = new ArrayList<>();
 
-        if (argumentsJson.has("order") && argumentsJson.has("awaiting")) {
-            OrderParser op = new OrderParser();
-            AwaitingOrder awaitingOrder = op.parseAwaitingOrder(argumentsJson);
-            argumentsList.add(awaitingOrder);
-        }
+        // Iterowanie po każdym elemencie w tablicy arguments
+        for (var element : argumentsJson.getAsJsonArray()) {
+            if (element.isJsonObject()) {
+                JsonObject jsonObject = element.getAsJsonObject();
 
-        // Możemy tu dodać kolejne typy argumentów, w zależności od komendy
+                // Sprawdzamy, czy jest to AwaitingOrder
+                if (jsonObject.has("order") && jsonObject.has("awaiting")) {
+                    // Parsujemy jako AwaitingOrder
+                    OrderParser op = new OrderParser();
+                    AwaitingOrder awaitingOrder = op.parseAwaitingOrder(jsonObject);
+                    argumentsList.add(awaitingOrder);
+                } else {
+                    // Inny obiekt JSON, traktujemy go ogólnie
+                    argumentsList.add(gson.fromJson(jsonObject, Object.class));
+                }
+            } else if (element.isJsonArray()) {
+                // Jeśli to tablica JSON, rekursywnie ją parsujemy
+                argumentsList.add(parseArguments(element.getAsJsonArray()));
+            } else if (element.isJsonPrimitive()) {
+                // Jeśli to prymityw (string, number, boolean)
+                argumentsList.add(element.getAsJsonPrimitive());
+            }
+        }
 
         return argumentsList;
     }
+
 }

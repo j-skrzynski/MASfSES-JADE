@@ -3,7 +3,7 @@ package org.example.logic.stockexchange.order.awaitingorder;
 import org.example.logic.stockexchange.order.PlacableDisposition;
 import org.example.logic.stockexchange.order.marketorder.ExchangeOrder;
 
-public class AwaitingOrder implements PlacableDisposition {
+public class AwaitingExchangeOrder implements PlacableDisposition {
 
 
 
@@ -11,7 +11,7 @@ public class AwaitingOrder implements PlacableDisposition {
     private ExchangeOrder order;
     private Double activationPrice;
 
-    public AwaitingOrder(ExchangeOrder order, Double activationPrice) {
+    public AwaitingExchangeOrder(ExchangeOrder order, Double activationPrice) {
         super();
         this.order = order;
         this.activationPrice = activationPrice;

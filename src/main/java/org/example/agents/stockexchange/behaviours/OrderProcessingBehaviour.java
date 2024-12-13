@@ -6,9 +6,11 @@ import jade.lang.acl.ACLMessage;
 import org.example.agents.stockexchange.StockExchangeAgent;
 import org.example.datamodels.StockSymbol;
 import org.example.datamodels.command.Command;
+import org.example.datamodels.command.CommandParser;
+import org.example.datamodels.order.AwaitingOrder;
 import org.example.datamodels.order.OrderExpirationType;
 import org.example.datamodels.order.OrderType;
-import org.example.logic.stockexchange.order.awaitingorder.AwaitingOrder;
+import org.example.logic.stockexchange.order.awaitingorder.AwaitingExchangeOrder;
 import org.example.logic.stockexchange.order.marketorder.NoLimitExchangeOrder;
 import org.example.logic.stockexchange.order.marketorder.ExchangeOrder;
 import org.example.logic.stockexchange.order.PlacableDisposition;
@@ -53,7 +55,8 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
 
     private String handleRequest(String content, AID sender) throws Exception {
         // Parsowanie JSON-a
-        Command command = gson.fromJson(content, Command.class);
+        CommandParser cp = new CommandParser();
+        Command command = cp.parseCommand(content);
 
         String cmd = command.getCommand();
         List<Object> arguments = command.getArguments();
@@ -65,7 +68,11 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
             case "ADD_STOCK":
                 return handleAddStock(arguments);
             case "PLACE_ORDER":
-                return processPlaceOrder(arguments, sender, traderName, brokerName, exchangeName);
+                Object orderSpec = arguments.get(0);
+                if(!(orderSpec instanceof AwaitingOrder)) {
+                   throw new IllegalArgumentException("PLACE_ORDER requires an AwaitingOrder");
+                }
+                return processPlaceOrder((AwaitingOrder)orderSpec, sender, traderName, brokerName, exchangeName);
             case "ADVANCE_SESSION":
                 return advanceSession();
             case "GET_TOP_BUY":
@@ -91,16 +98,13 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
         return "Stock added: " + name;
     }
 
-    private String processPlaceOrder(List<Object> arguments, AID sender, String traderName, String brokerName, String exchangeName) {
-        if (arguments.size() < 6) {
-            throw new IllegalArgumentException("PLACE_ORDER requires at least 6 parameters.");
-        }
+    private String processPlaceOrder(AwaitingOrder orderSpec, AID sender, String traderName, String brokerName, String exchangeName) {
 
-        String orderCommand = (String) arguments.get(0);
-        OrderType orderType = OrderType.fromString((String) arguments.get(1));
-        String expirationSpecification = (String) arguments.get(2);
-        String symbolShortName = (String) arguments.get(3);
-        long quantity = ((Number) arguments.get(4)).longValue();
+        String orderCommand = orderSpec.getOrderCommand();
+        OrderType orderType = orderSpec.getOrder().getOrderType();
+        String expirationSpecification = orderSpec.getOrder().getExpirationSecpification();
+        String symbolShortName = orderSpec.getOrder().getSymbol().getShortName();
+        long quantity = orderSpec.getOrder().getQuantity();
 
         StockSymbol symbol = agent.getStockExchange().getSymbolByShortName(symbolShortName);
         ExchangeDate expirationDate = processExpirationSpecification(expirationSpecification);
@@ -108,10 +112,7 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
         PlacableDisposition disposition = null;
         switch (orderCommand) {
             case "LIMIT":
-                if (arguments.size() < 7) {
-                    throw new IllegalArgumentException("LIMIT orders require a price.");
-                }
-                double price = (Double) arguments.get(5);
+                double price = orderSpec.getOrder().getPrice();
                 disposition = new ExchangeOrder(symbol, orderType, expirationDate, price, quantity,
                         new OrderSubmitter(traderName, brokerName, sender, exchangeName));  // Zmieniony konstruktor
                 break;
@@ -120,20 +121,14 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
                         new OrderSubmitter(traderName, brokerName, sender, exchangeName));  // Zmieniony konstruktor
                 break;
             case "STOP":
-                if (arguments.size() < 7) {
-                    throw new IllegalArgumentException("STOP orders require an activation price.");
-                }
-                double activationPrice = (Double) arguments.get(5);
-                disposition = new AwaitingOrder(new NoLimitExchangeOrder(symbol, orderType, expirationDate, quantity,
+                double activationPrice = orderSpec.getPrice();
+                disposition = new AwaitingExchangeOrder(new NoLimitExchangeOrder(symbol, orderType, expirationDate, quantity,
                         new OrderSubmitter(traderName, brokerName, sender, exchangeName)), activationPrice);
                 break;
             case "STOPLIMIT":
-                if (arguments.size() < 8) {
-                    throw new IllegalArgumentException("STOPLIMIT orders require a price and an activation price.");
-                }
-                price = (Double) arguments.get(5);
-                activationPrice = (Double) arguments.get(6);
-                disposition = new AwaitingOrder(new ExchangeOrder(symbol, orderType, expirationDate, price, quantity,
+                price = orderSpec.getPrice();
+                activationPrice = orderSpec.getOrder().getPrice();
+                disposition = new AwaitingExchangeOrder(new ExchangeOrder(symbol, orderType, expirationDate, price, quantity,
                         new OrderSubmitter(traderName, brokerName, sender, exchangeName)), activationPrice);
                 break;
         }

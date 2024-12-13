@@ -10,6 +10,7 @@ public class Order implements Comparable<Order> {
     protected Long quantity;
     protected Double price;
     private boolean hasLimit;
+    protected String expirationSecpification;
 
     public Order(StockSymbol symbol, OrderType orderType, Double price, Long quantity) {
         this.symbol = symbol;
@@ -70,4 +71,19 @@ public class Order implements Comparable<Order> {
         return o1.compareTo(o2);
     }
 
+
+    public String getExpirationSecpification() {
+        return expirationSecpification;
+    }
+
+    public void setExpirationSecpification(String expirationSecpification) {
+        this.expirationSecpification = expirationSecpification;
+    }
+
+    public String getOrderCommand(){
+        if (hasLimit){
+            return "LIMIT";
+        }
+        return "NOLIMIT";
+    }
 }

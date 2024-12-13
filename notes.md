@@ -46,3 +46,102 @@ Trader1/2#PLACE_ORDER;LIMIT;SELL;WDA;XD;100;102
 Trader2/2#PLACE_ORDER;LIMIT;SELL;WDA;XD;100;103
 Trader3/1#PLACE_ORDER;NOLIMIT;SELL;WDA;XD;100
 Trader4/1#PLACE_ORDER;LIMIT;BUY;WDA;XD;300;102
+
+
+---
+
+```
+
+{
+  "command": "ADD_STOCK",
+  "arguments": ["Apple", "AAPL", 150.0, 1000000],
+  "traderName": "",
+  "brokerName": "",
+  "exchangeName": ""
+}
+
+
+{
+  "command": "PLACE_ORDER",
+  "arguments": [{
+    "order": {
+      "symbol": {"shortName": "AAPL"},
+      "orderType": "BUY",
+      "price": 150.0,
+      "quantity": 1000,
+      "expirationSecpification": "D"
+    },
+    "awaiting": false,
+    "price": 150.0
+  }],
+  "traderName": "JohnDoe",
+  "brokerName": "XYZBroker",
+  "exchangeName": "GPW"
+}
+
+
+{
+  "command": "PLACE_ORDER",
+  "arguments": [{
+    "order": {
+      "symbol": {"shortName": "AAPL"},
+      "orderType": "SELL",
+      "price": null,
+      "quantity": 500,
+      "expirationSecpification": "D"
+    },
+    "awaiting": true,
+    "price": 145.0
+  }],
+  "traderName": "JohnDoe",
+  "brokerName": "XYZBroker",
+  "exchangeName": "NYSE"
+}
+
+{
+  "command": "PLACE_ORDER",
+  "arguments": [{
+    "order": {
+      "symbol": {"shortName": "AAPL"},
+      "orderType": "SELL",
+      "price": null,
+      "quantity": 500,
+      "expirationSecpification": "D"
+    },
+    "awaiting": true,
+    "price": 145.0
+  }],
+  "traderName": "JohnDoe",
+  "brokerName": "XYZBroker",
+  "exchangeName": "NYSE"
+}
+
+
+{
+  "command": "PLACE_ORDER",
+  "arguments": [{
+    "order": {
+      "symbol": {"shortName": "AAPL"},
+      "orderType": "SELL",
+      "price": 145.0,
+      "quantity": 500,
+      "expirationSecpification": "D"
+    },
+    "awaiting": true,
+    "price": 140.0
+  }],
+  "traderName": "JohnDoe",
+  "brokerName": "XYZBroker",
+  "exchangeName": "NYSE"
+}
+
+{
+  "command": "GET_TOP_BUY",
+  "arguments": ["AAPL"],
+  "traderName": "JohnDoe",
+  "brokerName": "XYZBroker",
+  "exchangeName": "NYSE"
+}
+
+
+```

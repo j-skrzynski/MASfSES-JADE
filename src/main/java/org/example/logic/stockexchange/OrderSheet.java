@@ -3,9 +3,9 @@ package org.example.logic.stockexchange;
 import org.example.datamodels.StockSymbol;
 import org.example.datamodels.order.OrderType;
 import org.example.logic.stockexchange.order.*;
-import org.example.logic.stockexchange.order.awaitingorder.AwaitingOrder;
-import org.example.logic.stockexchange.order.awaitingorder.AwaitingOrderComparatorAscending;
-import org.example.logic.stockexchange.order.awaitingorder.AwaitingOrderComparatorDescending;
+import org.example.logic.stockexchange.order.awaitingorder.AwaitingExchangeOrder;
+import org.example.logic.stockexchange.order.awaitingorder.AwaitingExchangeOrderComparatorAscending;
+import org.example.logic.stockexchange.order.awaitingorder.AwaitingExchangeOrderComparatorDescending;
 import org.example.logic.stockexchange.order.marketorder.ExchangeOrder;
 import org.example.logic.stockexchange.order.marketorder.OrderComparatorAscending;
 import org.example.logic.stockexchange.order.marketorder.OrderComparatorDescending;
@@ -41,8 +41,8 @@ public class OrderSheet {
     private Queue<ExchangeOrder> noLimitSell;
     private Queue<ExchangeOrder> noLimitBuy;
 
-    private Queue<AwaitingOrder> awaitingActivationBuy;
-    private Queue<AwaitingOrder> awaitingActivationSell;
+    private Queue<AwaitingExchangeOrder> awaitingActivationBuy;
+    private Queue<AwaitingExchangeOrder> awaitingActivationSell;
 
     private PriceTracker priceTracker;
     private StockSymbol symbol;
@@ -60,8 +60,8 @@ public class OrderSheet {
         noLimitSell = new LinkedList<>();
         noLimitBuy = new LinkedList<>();
 
-        awaitingActivationBuy = new PriorityQueue<>(new AwaitingOrderComparatorAscending());
-        awaitingActivationSell = new PriorityQueue<>(new AwaitingOrderComparatorDescending());
+        awaitingActivationBuy = new PriorityQueue<>(new AwaitingExchangeOrderComparatorAscending());
+        awaitingActivationSell = new PriorityQueue<>(new AwaitingExchangeOrderComparatorDescending());
 
         priceTracker = new PriceTracker(symbol,exchangeName);
         this.symbol = symbol;
@@ -225,7 +225,7 @@ public class OrderSheet {
         }
     }
 
-    private void placeAwaitingOrder(AwaitingOrder o) {
+    private void placeAwaitingOrder(AwaitingExchangeOrder o) {
         if (o.getActivatedOrder().getOrderType() == OrderType.BUY) {
             awaitingActivationBuy.add(o);
         }
@@ -249,8 +249,8 @@ public class OrderSheet {
         sellOrders.removeIf(order -> order.isExpired(date));
         noLimitBuy.removeIf(order -> order.isExpired(date));
         noLimitSell.removeIf(order -> order.isExpired(date));
-        awaitingActivationBuy.removeIf(awaitingOrder -> awaitingOrder.getActivatedOrder().isExpired(date));
-        awaitingActivationSell.removeIf(awaitingOrder -> awaitingOrder.getActivatedOrder().isExpired(date));
+        awaitingActivationBuy.removeIf(awaitingExchangeOrder -> awaitingExchangeOrder.getActivatedOrder().isExpired(date));
+        awaitingActivationSell.removeIf(awaitingExchangeOrder -> awaitingExchangeOrder.getActivatedOrder().isExpired(date));
     }
 
     public void placeDisposition(PlacableDisposition disposition){
@@ -258,7 +258,7 @@ public class OrderSheet {
             placeOrder((ExchangeOrder) disposition);
         }
         else{
-            placeAwaitingOrder((AwaitingOrder) disposition);
+            placeAwaitingOrder((AwaitingExchangeOrder) disposition);
         }
     }
 

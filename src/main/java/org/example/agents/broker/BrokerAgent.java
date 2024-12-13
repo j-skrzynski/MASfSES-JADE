@@ -22,7 +22,7 @@ public class BrokerAgent extends Agent {
         System.out.println("BrokerAgent " + getLocalName() + " started.");
 
         // Dodanie zachowania cyklicznego, które obsłuży wiadomości
-        addBehaviour(new );
+//        addBehaviour(new );
     }
 
     @Override
