@@ -2,9 +2,8 @@ package org.example.logic.stockexchange.settlements;
 
 import com.google.gson.Gson;
 import org.example.datamodels.TransactionResult;
-import org.example.datamodels.WalletRecord;
 import org.example.logic.stockexchange.utils.OrderSubmitter;
-import org.example.logic.stockexchange.utils.StockSymbol;
+import org.example.datamodels.StockSymbol;
 
 /**
  * Every time transaction is finished this class should be emited for seller and buyer

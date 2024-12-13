@@ -1,11 +1,11 @@
 package org.example.logic.stockexchange.settlements;
 
-import org.example.logic.stockexchange.order.Order;
+import org.example.logic.stockexchange.order.marketorder.ExchangeOrder;
 import org.glassfish.pfl.basic.contain.Pair;
 
 public class SettlementCreator {
 
-    public static Pair<BuyerSettlement, SellerSettlement> createSettlement(Order buyer, Order seller, Long tradedQuantity, Double transactionUnitPrice){
+    public static Pair<BuyerSettlement, SellerSettlement> createSettlement(ExchangeOrder buyer, ExchangeOrder seller, Long tradedQuantity, Double transactionUnitPrice){
         if( transactionUnitPrice > buyer.getPrice() ){
             throw new RuntimeException("Transaction price is greater than buyer price");
         }

@@ -1,6 +1,7 @@
 package org.example.logic.broker;
 
-import org.example.datamodels.StockId;
+import org.example.datamodels.StockSymbol;
+import org.example.global.StockDictionary;
 
 public class InvestorOrderRecord {
     /*
@@ -9,9 +10,77 @@ public class InvestorOrderRecord {
     * */
 
     private String orderId;
-    private StockId stockId;
-    private Long amountToBeTraded;
-    private Long moneyLocked;
+    private StockSymbol symbol;
+    private Long amountOfStockToBeBought;
+    private Long amountOfStockToBeSold;
+    private Double moneyLocked;
     private boolean limit;
+
+    public InvestorOrderRecord(String orderId, StockSymbol symbol, Long amountOfStockToBeBought, Long amountOfStockToBeSold, Double moneyLocked, boolean limit, OrderAction action) {
+        this.orderId = orderId;
+        this.symbol = symbol;
+        this.amountOfStockToBeBought = amountOfStockToBeBought;
+        this.amountOfStockToBeSold = amountOfStockToBeSold;
+        this.moneyLocked = moneyLocked;
+        this.limit = limit;
+        this.action = action;
+    }
+
+    public InvestorOrderRecord(InvestorRequest investorRequest, String orderId, Double moneyToLock) {
+        this.orderId = orderId;
+        this.symbol = StockDictionary.getStockIdByShortName(investorRequest.getShortName());
+        if(investorRequest.getAction() == OrderAction.BUY) {
+            this.amountOfStockToBeBought = investorRequest.getAmount();
+            this.amountOfStockToBeSold = 0L;
+        }
+        else{
+            this.amountOfStockToBeSold = investorRequest.getAmount();
+            this.amountOfStockToBeBought = 0L;
+        }
+        this.moneyLocked = moneyToLock;
+        this.limit = !investorRequest.isLimitless();
+        this.action = investorRequest.getAction();
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public Long getAmountOfStockToBeBought() {
+        return amountOfStockToBeBought;
+    }
+
+    public Long getAmountOfStockToBeSold() {
+        return amountOfStockToBeSold;
+    }
+
+    public Double getMoneyLocked() {
+        return moneyLocked;
+    }
+
+    public boolean isLimit() {
+        return limit;
+    }
+
+    public OrderAction getAction() {
+        return action;
+    }
+
     private OrderAction action;
+
+    public void payedMoney(Double money){
+        this.moneyLocked -= money;
+    }
+
+    public void soldStock(Long amount){
+        this.amountOfStockToBeSold -= amount;
+    }
+
+    public void boughtStock(Long amount){
+        this.amountOfStockToBeBought += amount;
+    }
+
+    public StockSymbol getStockSymbol() {
+        return symbol;
+    }
 }

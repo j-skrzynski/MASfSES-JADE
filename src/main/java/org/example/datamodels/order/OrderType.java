@@ -1,4 +1,4 @@
-package org.example.logic.stockexchange.utils;
+package org.example.datamodels.order;
 
 public enum OrderType{
     BUY,SELL;

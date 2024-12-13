@@ -1,9 +1,9 @@
 package org.example.logic.stockexchange;
 
 import org.example.logic.stockexchange.order.PlacableDisposition;
-import org.example.logic.stockexchange.utils.StockSymbol;
+import org.example.datamodels.StockSymbol;
 import org.example.logic.stockexchange.utils.ExchangeDate;
-import org.example.logic.stockexchange.order.Order;
+import org.example.logic.stockexchange.order.marketorder.ExchangeOrder;
 import org.example.logic.stockexchange.settlements.TransactionSettlement;
 
 import java.util.HashMap;
@@ -122,7 +122,7 @@ public class StockExchange {
     /**
      * Retrieves the top 5 buy offers for a specific stock symbol.
      */
-    public List<Order> getTopBuyOffers(StockSymbol symbol) {
+    public List<ExchangeOrder> getTopBuyOffers(StockSymbol symbol) {
         OrderSheet orderSheet = getOrderSheet(symbol);
         return orderSheet.getTopBuyOffers();
     }
@@ -130,7 +130,7 @@ public class StockExchange {
     /**
      * Retrieves the top 5 sell offers for a specific stock symbol.
      */
-    public List<Order> getTopSellOffers(StockSymbol symbol) {
+    public List<ExchangeOrder> getTopSellOffers(StockSymbol symbol) {
         OrderSheet orderSheet = getOrderSheet(symbol);
         return orderSheet.getTopSellOffers();
     }

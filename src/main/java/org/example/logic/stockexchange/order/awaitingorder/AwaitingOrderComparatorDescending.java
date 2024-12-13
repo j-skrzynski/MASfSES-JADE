@@ -1,4 +1,4 @@
-package org.example.logic.stockexchange.order;
+package org.example.logic.stockexchange.order.awaitingorder;
 
 import java.util.Comparator;
 

@@ -1,4 +1,4 @@
-package org.example.logic.stockexchange.utils;
+package org.example.datamodels;
 
 public class StockSymbol {
 

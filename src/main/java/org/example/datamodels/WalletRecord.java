@@ -1,14 +1,14 @@
 package org.example.datamodels;
 
 public class WalletRecord {
-    private final StockId stock;
+    private final StockSymbol stock;
     private Long amount;
 
-    public WalletRecord(StockId stock, Long amount) {
+    public WalletRecord(StockSymbol stock, Long amount) {
         this.stock = stock;
         this.amount = amount;
     }
-    public StockId getStock() {
+    public StockSymbol getStock() {
         return stock;
     }
 

@@ -1,5 +1,6 @@
 package org.example.logic.stockexchange.utils;
 
+import org.example.datamodels.StockSymbol;
 import org.glassfish.pfl.basic.contain.Pair;
 
 import java.util.ArrayList;

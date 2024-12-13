@@ -1,6 +1,14 @@
 package org.example.logic.stockexchange;
 
+import org.example.datamodels.StockSymbol;
+import org.example.datamodels.order.OrderType;
 import org.example.logic.stockexchange.order.*;
+import org.example.logic.stockexchange.order.awaitingorder.AwaitingOrder;
+import org.example.logic.stockexchange.order.awaitingorder.AwaitingOrderComparatorAscending;
+import org.example.logic.stockexchange.order.awaitingorder.AwaitingOrderComparatorDescending;
+import org.example.logic.stockexchange.order.marketorder.ExchangeOrder;
+import org.example.logic.stockexchange.order.marketorder.OrderComparatorAscending;
+import org.example.logic.stockexchange.order.marketorder.OrderComparatorDescending;
 import org.example.logic.stockexchange.utils.*;
 import org.example.logic.stockexchange.settlements.BuyerSettlement;
 import org.example.logic.stockexchange.settlements.SellerSettlement;
@@ -27,11 +35,11 @@ public class OrderSheet {
         }
 
     }
-    private Queue<Order> buyOrders;
-    private Queue<Order> sellOrders;
+    private Queue<ExchangeOrder> buyOrders;
+    private Queue<ExchangeOrder> sellOrders;
 
-    private Queue<Order> noLimitSell;
-    private Queue<Order> noLimitBuy;
+    private Queue<ExchangeOrder> noLimitSell;
+    private Queue<ExchangeOrder> noLimitBuy;
 
     private Queue<AwaitingOrder> awaitingActivationBuy;
     private Queue<AwaitingOrder> awaitingActivationSell;
@@ -80,7 +88,7 @@ public class OrderSheet {
         }
     }
 
-    private void placeSell(Order o){
+    private void placeSell(ExchangeOrder o){
         lastId = lastId.next();
         o.setSeqId(lastId);
         Double lastPriceFixing = null;
@@ -88,7 +96,7 @@ public class OrderSheet {
         //w pierwszej kolejności wykonujemy zlecenia PKC
         //Problemem jest że nie wiem jak obliczyć cenę, przyjmę więc max cenę oferty i maksymalne zlecenie
         while(!noLimitBuy.isEmpty() && o.getQuantity()>0){
-            Order topBuyOrder = noLimitBuy.peek();
+            ExchangeOrder topBuyOrder = noLimitBuy.peek();
             Double transactionUnitPrice = o.getPrice();
             if(!o.hasPriceLimit()){
                 transactionUnitPrice = getReferencePrice();//Math.min(transactionUnitPrice, buyOrders.peek().getPrice());
@@ -111,7 +119,7 @@ public class OrderSheet {
         while(!buyOrders.isEmpty() && o.getQuantity()>0 && buyOrders.peek().getPrice()>=o.getPrice()){
             // Dopuki są chętni do zakupu, mamy co sprzedawać i kupujący oferują więcej/= niż my chcemy dostać
             //wykonać za co najmniej naszą cenę
-            Order topBuyOrder = buyOrders.peek();
+            ExchangeOrder topBuyOrder = buyOrders.peek();
             Long tradedQuantity = Math.min(o.getQuantity(), topBuyOrder.getQuantity());
             Double unitPrice = topBuyOrder.getPrice(); // być może min z tej ceny i ostatniej rynkowej jakny sam pkc był
             logger.info("Incomming SELL "+o.toString()+" matched with "+topBuyOrder.toString()+" in against Limit phase. Sold " + tradedQuantity + "@" + unitPrice);
@@ -147,13 +155,13 @@ public class OrderSheet {
         updateAwaitingOrders(lastPriceFixing);
     }
 
-    private void placeBuy(Order o) {
+    private void placeBuy(ExchangeOrder o) {
         lastId = lastId.next();
         o.setSeqId(lastId);
         logger.info("Incomming BUY "+o.toString());
         Double lastPriceFixing = null;
         while(!noLimitSell.isEmpty() && o.getQuantity()>0){
-            Order topSellOrder = noLimitSell.peek();
+            ExchangeOrder topSellOrder = noLimitSell.peek();
             Double transactionUnitPrice = o.getPrice();
             if(!o.hasPriceLimit()){
                 transactionUnitPrice = getReferencePrice();//transactionUnitPrice = Math.min(transactionUnitPrice, buyOrders.peek().getPrice());
@@ -173,7 +181,7 @@ public class OrderSheet {
         }
         logger.info("Incomming BUY "+o.toString()+" passed NOLimit phase");
         while (!sellOrders.isEmpty() && o.getQuantity() > 0 && sellOrders.peek().getPrice() <= o.getPrice()) {
-            Order topSellOrder = sellOrders.peek();
+            ExchangeOrder topSellOrder = sellOrders.peek();
             Long tradedQuantity = Math.min(o.getQuantity(), topSellOrder.getQuantity());
             Double unitPrice = topSellOrder.getPrice();
             logger.info("Incomming BUY "+o.toString()+" matched with "+topSellOrder.toString()+" in against Limit phase. Sold " + tradedQuantity + "@" + unitPrice);
@@ -209,7 +217,7 @@ public class OrderSheet {
         updateAwaitingOrders(lastPriceFixing);
     }
 
-    private void placeOrder(Order o){
+    private void placeOrder(ExchangeOrder o){
         if (o.getOrderType() == OrderType.BUY) {
             placeBuy(o);
         } else if (o.getOrderType() == OrderType.SELL) {
@@ -247,7 +255,7 @@ public class OrderSheet {
 
     public void placeDisposition(PlacableDisposition disposition){
         if (!disposition.isAwaiting()){
-            placeOrder((Order) disposition);
+            placeOrder((ExchangeOrder) disposition);
         }
         else{
             placeAwaitingOrder((AwaitingOrder) disposition);
@@ -272,7 +280,7 @@ public class OrderSheet {
      * Retrieves the top 5 buy offers in ascending order of priority (best offers).
      * Does not remove these offers from the queue.
      */
-    public List<Order> getTopBuyOffers() {
+    public List<ExchangeOrder> getTopBuyOffers() {
         return getTopOrders(buyOrders, 5);
     }
 
@@ -280,18 +288,18 @@ public class OrderSheet {
      * Retrieves the top 5 sell offers in ascending order of priority (best offers).
      * Does not remove these offers from the queue.
      */
-    public List<Order> getTopSellOffers() {
+    public List<ExchangeOrder> getTopSellOffers() {
         return getTopOrders(sellOrders, 5);
     }
 
     /**
      * Retrieves up to 'n' best orders from the provided queue without modifying it.
      */
-    private List<Order> getTopOrders(Queue<Order> orders, int n) {
-        List<Order> topOrders = new ArrayList<>();
+    private List<ExchangeOrder> getTopOrders(Queue<ExchangeOrder> orders, int n) {
+        List<ExchangeOrder> topOrders = new ArrayList<>();
         int count = 0;
 
-        for (Order order : orders) {
+        for (ExchangeOrder order : orders) {
             topOrders.add(order);
             if (++count >= n) break; // Limit to 'n' orders
         }

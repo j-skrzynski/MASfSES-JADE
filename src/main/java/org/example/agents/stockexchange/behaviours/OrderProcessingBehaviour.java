@@ -4,9 +4,12 @@ import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.example.agents.stockexchange.StockExchangeAgent;
-import org.example.logic.stockexchange.order.AwaitingOrder;
-import org.example.logic.stockexchange.order.NoLimitOrder;
-import org.example.logic.stockexchange.order.Order;
+import org.example.datamodels.StockSymbol;
+import org.example.datamodels.order.OrderExpirationType;
+import org.example.datamodels.order.OrderType;
+import org.example.logic.stockexchange.order.awaitingorder.AwaitingOrder;
+import org.example.logic.stockexchange.order.marketorder.NoLimitExchangeOrder;
+import org.example.logic.stockexchange.order.marketorder.ExchangeOrder;
 import org.example.logic.stockexchange.order.PlacableDisposition;
 import org.example.logic.stockexchange.utils.*;
 
@@ -122,7 +125,7 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
         switch (expirationType) {
             case D:
                 // Ważne na dzień bieżący
-                return OrderExpirationType.getDDate(currentSessionStart);
+                return ExpirationDateCalculator.getDDate(currentSessionStart);
 
             case WDD:
                 if (parts.length < 2) {
@@ -130,11 +133,11 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
                 }
                 long sessionsCount = Long.parseLong(parts[1]);
                 long sessionsTillYearEnd = agent.getStockExchange().getSessionsTillYearEnd();
-                return OrderExpirationType.getWDDDate(currentSessionStart, sessionsCount, sessionsTillYearEnd);
+                return ExpirationDateCalculator.getWDDDate(currentSessionStart, sessionsCount, sessionsTillYearEnd);
 
             case WDA:
                 long sessionsToYearEnd = agent.getStockExchange().getSessionsTillYearEnd();
-                return OrderExpirationType.getWDADate(currentSessionStart, sessionsToYearEnd);
+                return ExpirationDateCalculator.getWDADate(currentSessionStart, sessionsToYearEnd);
 
             case WDC:
                 if (parts.length < 3) {
@@ -142,7 +145,7 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
                 }
                 long sessions = Long.parseLong(parts[1]);
                 long milliseconds = Long.parseLong(parts[2]);
-                return OrderExpirationType.getWDCDate(currentSessionStart, sessions, milliseconds);
+                return ExpirationDateCalculator.getWDCDate(currentSessionStart, sessions, milliseconds);
 
 //            case WNF:
 //                // Implementacja logiki dla "Ważne na fixing"
@@ -181,17 +184,17 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
                     throw new IllegalArgumentException("Limit specification cannot be empty. Usage: <traderName>#PLACE_ORDER;LIMIT;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>;<price>");
                 }
                 price = Double.parseDouble(parts[6]);
-                disposition = new Order(symbol,orderType,expirationDate,price,quantity,submitter);
+                disposition = new ExchangeOrder(symbol,orderType,expirationDate,price,quantity,submitter);
                 break;
             case "NOLIMIT":
-                disposition = new NoLimitOrder(symbol,orderType,expirationDate,quantity,submitter);
+                disposition = new NoLimitExchangeOrder(symbol,orderType,expirationDate,quantity,submitter);
                 break;
             case "STOP":
                 if (parts.length < 7) {
                     throw new IllegalArgumentException("Activation price specification cannot be empty. Usage: <traderName>#PLACE_ORDER;STOP;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>;<activationPrice>");
                 }
                 activationPrice = Double.parseDouble(parts[6]);
-                disposition = new AwaitingOrder(new NoLimitOrder(symbol,orderType,expirationDate,quantity,submitter),activationPrice);
+                disposition = new AwaitingOrder(new NoLimitExchangeOrder(symbol,orderType,expirationDate,quantity,submitter),activationPrice);
                 break;
             case "STOPLIMIT":
                 if (parts.length < 8) {
@@ -199,7 +202,7 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
                 }
                 price = Double.parseDouble(parts[6]);
                 activationPrice = Double.parseDouble(parts[7]);
-                disposition = new AwaitingOrder(new Order(symbol,orderType,expirationDate,price,quantity,submitter),activationPrice);
+                disposition = new AwaitingOrder(new ExchangeOrder(symbol,orderType,expirationDate,price,quantity,submitter),activationPrice);
                 break;
         }
         agent.getStockExchange().placeOrder(symbol,disposition);
@@ -226,13 +229,13 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
 
     private String getTopBuy(String symbolShortName) {
         StockSymbol stockSymbol = agent.getStockExchange().getSymbolByShortName(symbolShortName);
-        List<Order> orders = agent.getStockExchange().getTopBuyOffers(stockSymbol);
+        List<ExchangeOrder> orders = agent.getStockExchange().getTopBuyOffers(stockSymbol);
         return "Top Buy Offers: " + orders.toString();
     }
 
     private String getTopSell(String symbolShortName) {
         StockSymbol stockSymbol = agent.getStockExchange().getSymbolByShortName(symbolShortName);
-        List<Order> orders = agent.getStockExchange().getTopSellOffers(stockSymbol);
+        List<ExchangeOrder> orders = agent.getStockExchange().getTopSellOffers(stockSymbol);
         return "Top Sell Offers: " + orders.toString();
     }
 }

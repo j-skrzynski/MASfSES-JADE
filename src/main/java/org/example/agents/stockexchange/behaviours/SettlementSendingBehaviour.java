@@ -4,7 +4,7 @@ import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.example.agents.stockexchange.StockExchangeAgent;
 import org.example.logic.stockexchange.settlements.TransactionSettlement;
-import org.example.logic.stockexchange.utils.StockSymbol;
+import org.example.datamodels.StockSymbol;
 
 import java.util.logging.*;
 
