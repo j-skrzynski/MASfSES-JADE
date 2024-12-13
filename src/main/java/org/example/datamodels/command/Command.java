@@ -9,6 +9,11 @@ public class Command {
     private final String traderName;
     private final String brokerName;
     private final String exchangeName;
+    private final String brokerOrderId;
+
+    public String getBrokerOrderId() {
+        return brokerOrderId;
+    }
 
     public String getCommand() {
         return command;
@@ -34,12 +39,13 @@ public class Command {
         return exchangeName;
     }
 
-    public Command(String command, String stockExchangeName, List<Object> arguments, String traderName, String brokerName, String exchangeName) {
+    public Command(String command, String stockExchangeName, List<Object> arguments, String traderName, String brokerName, String exchangeName, String brokerOrderId) {
         this.command = command;
         this.stockExchangeName = stockExchangeName;
         this.arguments = arguments;
         this.traderName = traderName;
         this.brokerName = brokerName;
         this.exchangeName = exchangeName;
+        this.brokerOrderId = brokerOrderId;
     }
 }

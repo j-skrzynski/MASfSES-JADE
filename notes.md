@@ -57,7 +57,8 @@ Trader4/1#PLACE_ORDER;LIMIT;BUY;WDA;XD;300;102
   "arguments": ["Apple", "AAPL", 150.0, 1000000],
   "traderName": "",
   "brokerName": "",
-  "exchangeName": ""
+  "exchangeName": "",
+  "brokerOrderId": ""
 }
 
 
@@ -72,11 +73,32 @@ Trader4/1#PLACE_ORDER;LIMIT;BUY;WDA;XD;300;102
       "expirationSecpification": "D"
     },
     "awaiting": false,
+    "price": 0.0
+  }],
+  "traderName": "JohnDoe",
+  "brokerName": "XYZBroker",
+  "exchangeName": "GPW",
+  "brokerOrderId": ""
+}
+
+
+{
+  "command": "PLACE_ORDER",
+  "arguments": [{
+    "order": {
+      "symbol": {"shortName": "AAPL"},
+      "orderType": "SELL",
+      "price": 149.0,
+      "quantity": 1000,
+      "expirationSecpification": "D"
+    },
+    "awaiting": false,
     "price": 150.0
   }],
-  "traderName": "JohnDoe",
+  "traderName": "sMITH",
   "brokerName": "XYZBroker",
-  "exchangeName": "GPW"
+  "exchangeName": "GPW",
+  "brokerOrderId": ""
 }
 
 
@@ -95,7 +117,8 @@ Trader4/1#PLACE_ORDER;LIMIT;BUY;WDA;XD;300;102
   }],
   "traderName": "JohnDoe",
   "brokerName": "XYZBroker",
-  "exchangeName": "NYSE"
+  "exchangeName": "NYSE",
+  "brokerOrderId": ""
 }
 
 {
@@ -113,7 +136,8 @@ Trader4/1#PLACE_ORDER;LIMIT;BUY;WDA;XD;300;102
   }],
   "traderName": "JohnDoe",
   "brokerName": "XYZBroker",
-  "exchangeName": "NYSE"
+  "exchangeName": "NYSE",
+  "brokerOrderId": ""
 }
 
 
@@ -132,7 +156,8 @@ Trader4/1#PLACE_ORDER;LIMIT;BUY;WDA;XD;300;102
   }],
   "traderName": "JohnDoe",
   "brokerName": "XYZBroker",
-  "exchangeName": "NYSE"
+  "exchangeName": "NYSE",
+  "brokerOrderId": ""
 }
 
 {
@@ -140,7 +165,8 @@ Trader4/1#PLACE_ORDER;LIMIT;BUY;WDA;XD;300;102
   "arguments": ["AAPL"],
   "traderName": "JohnDoe",
   "brokerName": "XYZBroker",
-  "exchangeName": "NYSE"
+  "exchangeName": "NYSE",
+  "brokerOrderId": ""
 }
 
 

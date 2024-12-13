@@ -27,10 +27,10 @@ public class CommandParser {
             JsonArray arguments = root.getAsJsonArray("arguments");
             String traderName = root.get("traderName").getAsString();
             String brokerName = root.get("traderName").getAsString();
-
+            String brokerOrderId = root.get("brokerOrderId").getAsString();
 
             List<Object> argumentsList = parseArguments(arguments);
-            return new Command(command,stockExchangeName,argumentsList,traderName,brokerName,stockExchangeName);
+            return new Command(command,stockExchangeName,argumentsList,traderName,brokerName,stockExchangeName,brokerOrderId);
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid JSON command: " + e.getMessage(), e);
         }
@@ -40,7 +40,7 @@ public class CommandParser {
         List<Object> argumentsList = new ArrayList<>();
 
         // Iterowanie po każdym elemencie w tablicy arguments
-        for (var element : argumentsJson.getAsJsonArray()) {
+        for (var element : argumentsJson) {
             if (element.isJsonObject()) {
                 JsonObject jsonObject = element.getAsJsonObject();
 
@@ -58,12 +58,31 @@ public class CommandParser {
                 // Jeśli to tablica JSON, rekursywnie ją parsujemy
                 argumentsList.add(parseArguments(element.getAsJsonArray()));
             } else if (element.isJsonPrimitive()) {
-                // Jeśli to prymityw (string, number, boolean)
-                argumentsList.add(element.getAsJsonPrimitive());
+                // Jeśli to prymityw (string, number, boolean) - traktujemy konkretne typy
+                if (element.getAsJsonPrimitive().isString()) {
+                    argumentsList.add(element.getAsString());
+                } else if (element.getAsJsonPrimitive().isNumber()) {
+                    // Jeśli liczba, sprawdzamy, czy to int, long, double
+                    try {
+                        // Próbujemy jako Double
+                        argumentsList.add(element.getAsDouble());
+                    } catch (NumberFormatException e) {
+                        // Jeśli się nie udało, próbujemy jako Long
+                        try {
+                            argumentsList.add(element.getAsLong());
+                        } catch (NumberFormatException ex) {
+                            // Jeśli to nie Long, próbujemy jako Integer
+                            argumentsList.add(element.getAsInt());
+                        }
+                    }
+                } else if (element.getAsJsonPrimitive().isBoolean()) {
+                    argumentsList.add(element.getAsBoolean());
+                }
             }
         }
 
         return argumentsList;
     }
+
 
 }

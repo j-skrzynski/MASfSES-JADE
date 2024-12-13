@@ -62,7 +62,7 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
         List<Object> arguments = command.getArguments();
         String traderName = command.getTraderName();  // Nowe pole
         String brokerName = command.getBrokerName();  // Nowe pole
-        String exchangeName = command.getExchangeName();  // Nowe pole
+        String brokerOrderId = command.getBrokerOrderId();  // Nowe pole
 
         switch (cmd) {
             case "ADD_STOCK":
@@ -72,7 +72,7 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
                 if(!(orderSpec instanceof AwaitingOrder)) {
                    throw new IllegalArgumentException("PLACE_ORDER requires an AwaitingOrder");
                 }
-                return processPlaceOrder((AwaitingOrder)orderSpec, sender, traderName, brokerName, exchangeName);
+                return processPlaceOrder((AwaitingOrder)orderSpec, sender, traderName, brokerName, brokerOrderId);
             case "ADVANCE_SESSION":
                 return advanceSession();
             case "GET_TOP_BUY":
