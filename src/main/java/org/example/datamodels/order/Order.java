@@ -16,7 +16,7 @@ public class Order implements Comparable<Order> {
         this.orderType = orderType;
         this.quantity = quantity;
 
-        if (price == null) {
+        if (price == null) {    //zlecenie nolimit
             this.price = getInfValue(orderType);
             this.hasLimit = false;
         } else {

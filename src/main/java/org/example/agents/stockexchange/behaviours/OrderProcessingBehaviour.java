@@ -5,6 +5,7 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.example.agents.stockexchange.StockExchangeAgent;
 import org.example.datamodels.StockSymbol;
+import org.example.datamodels.command.Command;
 import org.example.datamodels.order.OrderExpirationType;
 import org.example.datamodels.order.OrderType;
 import org.example.logic.stockexchange.order.awaitingorder.AwaitingOrder;
@@ -13,15 +14,20 @@ import org.example.logic.stockexchange.order.marketorder.ExchangeOrder;
 import org.example.logic.stockexchange.order.PlacableDisposition;
 import org.example.logic.stockexchange.utils.*;
 
-import java.util.List;
+import com.google.gson.Gson;
 
+import java.util.List;
 
 public class OrderProcessingBehaviour extends CyclicBehaviour {
     private StockExchangeAgent agent;
+    private Gson gson;
+
     public OrderProcessingBehaviour(StockExchangeAgent agent) {
         super(agent);
         this.agent = agent;
+        this.gson = new Gson(); // JSON parser
     }
+
     @Override
     public void action() {
         ACLMessage msg = agent.receive();
@@ -31,9 +37,7 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
 
             try {
                 AID sender = msg.getSender();
-                String response = handleRequest(content,sender);
-
-
+                String response = handleRequest(content, sender);
                 reply.setPerformative(ACLMessage.INFORM);
                 reply.setContent(response);
             } catch (Exception e) {
@@ -47,69 +51,120 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
         }
     }
 
+    private String handleRequest(String content, AID sender) throws Exception {
+        // Parsowanie JSON-a
+        Command command = gson.fromJson(content, Command.class);
 
+        String cmd = command.getCommand();
+        List<Object> arguments = command.getArguments();
+        String traderName = command.getTraderName();  // Nowe pole
+        String brokerName = command.getBrokerName();  // Nowe pole
+        String exchangeName = command.getExchangeName();  // Nowe pole
 
-    private String handleRequest(String content,AID sender) throws Exception {
-        String[] comd = content.split("#");
-        if (comd.length != 2) {
-            throw new IllegalArgumentException("Invalid request. <trader>#<command> was expected. Hash must appear exactly once separating sender from the command");
-        }
-        String[] parts = comd[1].split(";");
-        if (parts.length < 1) {
-            throw new IllegalArgumentException("Command not provided. After # the command specification is expected. It is semicoln-separated. First element is command name");
-        }
-        String command = parts[0];
-
-        switch (command) {
+        switch (cmd) {
             case "ADD_STOCK":
-                if(parts.length<5){
-                    throw new IllegalArgumentException("ADD_STOCK requires at 5 parameters. Usage: <traderName>#ADD_STOCK;<long name>;<short name>;<ipo price>;<total number of shares>  In this request <traderName> mat be empty");
-                }
-                String long_name = parts[1];
-                String short_name = parts[2];
-                Double IPOPrice = Double.parseDouble(parts[3]);
-                Long shares = Long.parseLong(parts[4]);
-
-                return addStock(long_name,short_name,IPOPrice,shares);
+                return handleAddStock(arguments);
             case "PLACE_ORDER":
-                String[] sender_identifiers = comd[0].split("/");
-                String investorName  = sender_identifiers[0];
-                String investorOrderId;
-                if(sender_identifiers.length < 2){
-                    investorOrderId = "";
-                }
-                else {
-                    investorOrderId = sender_identifiers[1];
-                }
-                OrderSubmitter submitter = new OrderSubmitter(investorName,sender,investorOrderId);
-                return processOrderCommand(parts,submitter);
-//                String orderCommand = parts[1];
-//                String orderType = parts[2];
-//
-//                return processOrderCommand(orderCommand,orderType, Arrays.copyOfRange(parts, 2, parts.length););
-                //return placeOrder(parts[1], parts[2], Integer.parseInt(parts[3]), Double.parseDouble(parts[4]));
+                return processPlaceOrder(arguments, sender, traderName, brokerName, exchangeName);
             case "ADVANCE_SESSION":
                 return advanceSession();
             case "GET_TOP_BUY":
-                if (parts.length != 2) {
-                    throw new IllegalArgumentException("GET_TOP_BUY requires a single parameter - stock short name");
-                }
-                return getTopBuy(parts[1]);
+                return getTopBuy(arguments);
             case "GET_TOP_SELL":
-                if (parts.length != 2) {
-                    throw new IllegalArgumentException("GET_TOP_SELL requires a single parameter - stock short name");
-                }
-                return getTopSell(parts[1]);
+                return getTopSell(arguments);
             default:
-                throw new IllegalArgumentException("Unknown command: " + command);
+                throw new IllegalArgumentException("Unknown command: " + cmd);
         }
     }
 
+    private String handleAddStock(List<Object> arguments) {
+        if (arguments.size() < 4) {
+            throw new IllegalArgumentException("ADD_STOCK requires at least 4 parameters.");
+        }
+        String name = (String) arguments.get(0);
+        String shortName = (String) arguments.get(1);
+        double ipoPrice = (Double) arguments.get(2);
+        long shares = ((Number) arguments.get(3)).longValue();
 
-    private String addStock(String name, String shortName, double ipoPrice, Long shares) {
         StockSymbol stockSymbol = new StockSymbol(name, shortName, ipoPrice, shares);
         agent.getStockExchange().addStock(stockSymbol);
         return "Stock added: " + name;
+    }
+
+    private String processPlaceOrder(List<Object> arguments, AID sender, String traderName, String brokerName, String exchangeName) {
+        if (arguments.size() < 6) {
+            throw new IllegalArgumentException("PLACE_ORDER requires at least 6 parameters.");
+        }
+
+        String orderCommand = (String) arguments.get(0);
+        OrderType orderType = OrderType.fromString((String) arguments.get(1));
+        String expirationSpecification = (String) arguments.get(2);
+        String symbolShortName = (String) arguments.get(3);
+        long quantity = ((Number) arguments.get(4)).longValue();
+
+        StockSymbol symbol = agent.getStockExchange().getSymbolByShortName(symbolShortName);
+        ExchangeDate expirationDate = processExpirationSpecification(expirationSpecification);
+
+        PlacableDisposition disposition = null;
+        switch (orderCommand) {
+            case "LIMIT":
+                if (arguments.size() < 7) {
+                    throw new IllegalArgumentException("LIMIT orders require a price.");
+                }
+                double price = (Double) arguments.get(5);
+                disposition = new ExchangeOrder(symbol, orderType, expirationDate, price, quantity,
+                        new OrderSubmitter(traderName, brokerName, sender, exchangeName));  // Zmieniony konstruktor
+                break;
+            case "NOLIMIT":
+                disposition = new NoLimitExchangeOrder(symbol, orderType, expirationDate, quantity,
+                        new OrderSubmitter(traderName, brokerName, sender, exchangeName));  // Zmieniony konstruktor
+                break;
+            case "STOP":
+                if (arguments.size() < 7) {
+                    throw new IllegalArgumentException("STOP orders require an activation price.");
+                }
+                double activationPrice = (Double) arguments.get(5);
+                disposition = new AwaitingOrder(new NoLimitExchangeOrder(symbol, orderType, expirationDate, quantity,
+                        new OrderSubmitter(traderName, brokerName, sender, exchangeName)), activationPrice);
+                break;
+            case "STOPLIMIT":
+                if (arguments.size() < 8) {
+                    throw new IllegalArgumentException("STOPLIMIT orders require a price and an activation price.");
+                }
+                price = (Double) arguments.get(5);
+                activationPrice = (Double) arguments.get(6);
+                disposition = new AwaitingOrder(new ExchangeOrder(symbol, orderType, expirationDate, price, quantity,
+                        new OrderSubmitter(traderName, brokerName, sender, exchangeName)), activationPrice);
+                break;
+        }
+
+        agent.getStockExchange().placeOrder(symbol, disposition);
+        return "OK";
+    }
+
+    private String advanceSession() {
+        agent.getStockExchange().advanceExchangeDateBySession();
+        return "Exchange session advanced.";
+    }
+
+    private String getTopBuy(List<Object> arguments) {
+        if (arguments.size() != 1) {
+            throw new IllegalArgumentException("GET_TOP_BUY requires a single parameter (stock short name).");
+        }
+        String shortName = (String) arguments.get(0);
+        StockSymbol stockSymbol = agent.getStockExchange().getSymbolByShortName(shortName);
+        List<ExchangeOrder> orders = agent.getStockExchange().getTopBuyOffers(stockSymbol);
+        return "Top Buy Offers: " + orders.toString();
+    }
+
+    private String getTopSell(List<Object> arguments) {
+        if (arguments.size() != 1) {
+            throw new IllegalArgumentException("GET_TOP_SELL requires a single parameter (stock short name).");
+        }
+        String shortName = (String) arguments.get(0);
+        StockSymbol stockSymbol = agent.getStockExchange().getSymbolByShortName(shortName);
+        List<ExchangeOrder> orders = agent.getStockExchange().getTopSellOffers(stockSymbol);
+        return "Top Sell Offers: " + orders.toString();
     }
 
     private ExchangeDate processExpirationSpecification(String expiration) {
@@ -124,118 +179,26 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
 
         switch (expirationType) {
             case D:
-                // Ważne na dzień bieżący
                 return ExpirationDateCalculator.getDDate(currentSessionStart);
-
             case WDD:
                 if (parts.length < 2) {
-                    throw new IllegalArgumentException("WDD type requires number of sessions specified. Usage: WDD/<numberOfSessions>");
+                    throw new IllegalArgumentException("WDD type requires number of sessions specified.");
                 }
                 long sessionsCount = Long.parseLong(parts[1]);
                 long sessionsTillYearEnd = agent.getStockExchange().getSessionsTillYearEnd();
                 return ExpirationDateCalculator.getWDDDate(currentSessionStart, sessionsCount, sessionsTillYearEnd);
-
             case WDA:
                 long sessionsToYearEnd = agent.getStockExchange().getSessionsTillYearEnd();
                 return ExpirationDateCalculator.getWDADate(currentSessionStart, sessionsToYearEnd);
-
             case WDC:
                 if (parts.length < 3) {
-                    throw new IllegalArgumentException("WDC type requires number of sessions and milliseconds specified. Usage: WDC/<numberOfSessions>/<numberOfMilliseconds>");
+                    throw new IllegalArgumentException("WDC type requires number of sessions and milliseconds specified.");
                 }
                 long sessions = Long.parseLong(parts[1]);
                 long milliseconds = Long.parseLong(parts[2]);
                 return ExpirationDateCalculator.getWDCDate(currentSessionStart, sessions, milliseconds);
-
-//            case WNF:
-//                // Implementacja logiki dla "Ważne na fixing"
-//                return agent.getStockExchange().getNextFixingDate(currentSessionStart);
-//
-//            case WNZ:
-//                // Implementacja logiki dla "Ważne na zamknięcie"
-//                return agent.getStockExchange().getEndOfClosingPhaseDate(currentSessionStart);
-
             default:
                 throw new IllegalArgumentException("Unsupported expiration type: " + expirationType);
         }
-
-    }
-
-    private String processOrderCommand(String[] parts,OrderSubmitter submitter) {
-        if (parts.length < 6) {
-            throw new IllegalArgumentException("Orders commands require at least 6 parameters. Usage: <traderName>#PLACE_ORDER;<orderName>;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>;...");
-        }
-
-        String orderCommand = parts[1];
-        OrderType orderType = OrderType.fromString(parts[2]);
-        String expirtationSpecicication = parts[3];
-
-        String symbolShortName = parts[4];
-        Long quantity = Long.parseLong(parts[5]);
-        StockSymbol symbol = agent.getStockExchange().getSymbolByShortName(symbolShortName);
-        ExchangeDate expirationDate = processExpirationSpecification(expirtationSpecicication);
-
-        Double price;
-        Double activationPrice;
-        PlacableDisposition disposition=null;
-        switch (orderCommand) {
-            case "LIMIT":
-                if (parts.length < 7) {
-                    throw new IllegalArgumentException("Limit specification cannot be empty. Usage: <traderName>#PLACE_ORDER;LIMIT;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>;<price>");
-                }
-                price = Double.parseDouble(parts[6]);
-                disposition = new ExchangeOrder(symbol,orderType,expirationDate,price,quantity,submitter);
-                break;
-            case "NOLIMIT":
-                disposition = new NoLimitExchangeOrder(symbol,orderType,expirationDate,quantity,submitter);
-                break;
-            case "STOP":
-                if (parts.length < 7) {
-                    throw new IllegalArgumentException("Activation price specification cannot be empty. Usage: <traderName>#PLACE_ORDER;STOP;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>;<activationPrice>");
-                }
-                activationPrice = Double.parseDouble(parts[6]);
-                disposition = new AwaitingOrder(new NoLimitExchangeOrder(symbol,orderType,expirationDate,quantity,submitter),activationPrice);
-                break;
-            case "STOPLIMIT":
-                if (parts.length < 8) {
-                    throw new IllegalArgumentException("Missing arguments. Usage: <traderName>#PLACE_ORDER;STOPLIMIT;<orderType>;<expirationSpecification>;<symbolShortName>;<quantity>;<price>;<activationPrice>");
-                }
-                price = Double.parseDouble(parts[6]);
-                activationPrice = Double.parseDouble(parts[7]);
-                disposition = new AwaitingOrder(new ExchangeOrder(symbol,orderType,expirationDate,price,quantity,submitter),activationPrice);
-                break;
-        }
-        agent.getStockExchange().placeOrder(symbol,disposition);
-        return "OK";
-    }
-
-
-
-
-//    private String placeOrder(String symbol, String type, int quantity, double price) {
-//        StockSymbol stockSymbol = new StockSymbol(symbol, 0);
-//        Order order = new Order(stockSymbol, type.equalsIgnoreCase("BUY") ? Order.OrderType.BUY : Order.OrderType.SELL);
-//        order.setQuantity(quantity);
-//        order.setPrice(price);
-//
-//        stockExchange.placeOrder(stockSymbol, order);
-//        return "Order placed: " + type + " " + quantity + " @ " + price;
-//    }
-
-    private String advanceSession() {
-        agent.getStockExchange().advanceExchangeDateBySession();
-        return "Exchange session advanced.";
-    }
-
-    private String getTopBuy(String symbolShortName) {
-        StockSymbol stockSymbol = agent.getStockExchange().getSymbolByShortName(symbolShortName);
-        List<ExchangeOrder> orders = agent.getStockExchange().getTopBuyOffers(stockSymbol);
-        return "Top Buy Offers: " + orders.toString();
-    }
-
-    private String getTopSell(String symbolShortName) {
-        StockSymbol stockSymbol = agent.getStockExchange().getSymbolByShortName(symbolShortName);
-        List<ExchangeOrder> orders = agent.getStockExchange().getTopSellOffers(stockSymbol);
-        return "Top Sell Offers: " + orders.toString();
     }
 }

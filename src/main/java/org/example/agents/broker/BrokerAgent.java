@@ -1,6 +1,7 @@
 package org.example.agents.broker;
 
 
+import com.google.gson.Gson;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -50,15 +51,9 @@ public class BrokerAgent extends Agent {
         );
     }
 
-    private TransactionResult parseTransactionResult(String[] parts) {
-        // Przykład parsowania wiadomości na TransactionResult
-        String orderId = parts[2];
-        double toPay = Double.parseDouble(parts[3]);
-        double toWithdraw = Double.parseDouble(parts[4]);
-        long boughtStock = Long.parseLong(parts[5]);
-        long soldStock = Long.parseLong(parts[6]);
-        String shortName = parts[7];
-
-        return new TransactionResult(orderId, toPay, toWithdraw, boughtStock, soldStock, shortName);
+    private TransactionResult parseTransactionResult(String json) {
+        Gson gson = new Gson();
+        TransactionResult result = gson.fromJson(json, TransactionResult.class);
+        return result;
     }
 }
