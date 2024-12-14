@@ -23,9 +23,6 @@ public class AgentWindow {
     }
 
     public void drawText(String text) {
-        SwingUtilities.invokeLater(() -> {
-            _framePanel.setContent(text);
-            _framePanel.repaint();
-        });
+        _framePanel.setContent(text);
     }
 }

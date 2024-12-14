@@ -20,6 +20,7 @@ public abstract class BaseWindowPanel<Content extends Comparable<Content>> exten
 
         if (content.compareTo(_content) != 0) {
             this._content = content;
+            SwingUtilities.invokeLater(this::repaint);
         }
     }
 
