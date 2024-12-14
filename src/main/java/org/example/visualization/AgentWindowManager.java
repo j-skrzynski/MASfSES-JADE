@@ -1,5 +1,6 @@
 package org.example.visualization;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +19,9 @@ public class AgentWindowManager {
         }
 
         TEST_INSTANCE = new AgentWindowManager();
-        TEST_INSTANCE.addAgentWindow(new AgentWindow("GPW"));
+        SwingUtilities.invokeLater(() -> {
+            TEST_INSTANCE.addAgentWindow(new AgentWindow("GPW"));
+        });
 
         return TEST_INSTANCE;
     }
