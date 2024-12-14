@@ -5,6 +5,7 @@ import org.example.stockexchange.utils.StockSymbol;
 import org.example.stockexchange.utils.ExchangeDate;
 import org.example.stockexchange.order.Order;
 import org.example.stockexchange.settlements.TransactionSettlement;
+import org.example.visualization.AgentWindowManager;
 
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +52,7 @@ public class StockExchange {
      */
     public void addStock(StockSymbol symbol) {
         if (!orderSheets.containsKey(symbol)) {
-            orderSheets.put(symbol, new OrderSheet(symbol, name));
+            orderSheets.put(symbol, new OrderSheet(symbol, name, AgentWindowManager.getTestInstance()));
         } else {
             throw new IllegalArgumentException("Stock already exists in the exchange.");
         }

@@ -1,11 +1,14 @@
 package org.example.stockexchange;
 
+import org.example.stockexchange.listeners.*;
 import org.example.stockexchange.order.*;
 import org.example.stockexchange.settlements.BuyerSettlement;
 import org.example.stockexchange.settlements.SellerSettlement;
 import org.example.stockexchange.settlements.SettlementCreator;
 import org.example.stockexchange.settlements.TransactionSettlement;
 import org.example.stockexchange.utils.*;
+import org.example.util.ListenableQueue;
+import org.example.visualization.AgentWindowManager;
 import org.glassfish.pfl.basic.contain.Pair;
 
 import java.util.*;
@@ -27,38 +30,47 @@ public class OrderSheet {
         }
 
     }
-    private Queue<Order> buyOrders;
-    private Queue<Order> sellOrders;
+    private ListenableQueue<Order> buyOrders;
+    private ListenableQueue<Order> sellOrders;
 
-    private Queue<Order> noLimitSell;
-    private Queue<Order> noLimitBuy;
+    private ListenableQueue<Order> noLimitSell;
+    private ListenableQueue<Order> noLimitBuy;
 
-    private Queue<AwaitingOrder> awaitingActivationBuy;
-    private Queue<AwaitingOrder> awaitingActivationSell;
+    private ListenableQueue<AwaitingOrder> awaitingActivationBuy;
+    private ListenableQueue<AwaitingOrder> awaitingActivationSell;
 
     private PriceTracker priceTracker;
     private StockSymbol symbol;
 
-    private Queue<TransactionSettlement> settlementsToSend;
+    private ListenableQueue<TransactionSettlement> settlementsToSend;
 
     private String exchangeName;
 
     private ExchangeOrderingID lastId;
 
-    public OrderSheet(StockSymbol symbol, String exchangeName) {
-        buyOrders = new PriorityQueue<>(new OrderComparatorDescending()); // da najwięcej --- da najmniej  > descending
-        sellOrders = new PriorityQueue<>(new OrderComparatorAscending());// najtańsze --- najdroższe  > ascending
+    public OrderSheet(StockSymbol symbol, String exchangeName, AgentWindowManager agentWindowManager) {
+        buyOrders = new ListenableQueue<>(new PriorityQueue<>(new OrderComparatorDescending())) // da najwięcej --- da najmniej  > descending
+                .addListener(new BuyOrderListener(agentWindowManager));
 
-        noLimitSell = new LinkedList<>();
-        noLimitBuy = new LinkedList<>();
+        sellOrders = new ListenableQueue<>(new PriorityQueue<>(new OrderComparatorAscending())) // najtańsze --- najdroższe  > ascending
+                .addListener(new SellOrderListener(agentWindowManager));
 
-        awaitingActivationBuy = new PriorityQueue<>(new AwaitingOrderComparatorAscending());
-        awaitingActivationSell = new PriorityQueue<>(new AwaitingOrderComparatorDescending());
+        noLimitSell = new ListenableQueue<>(new LinkedList<Order>())
+                .addListener(new SellOrderListener(agentWindowManager));
+        noLimitBuy = new ListenableQueue<>(new LinkedList<Order>())
+                .addListener(new BuyOrderListener(agentWindowManager));
+
+        awaitingActivationBuy = new ListenableQueue<>(new PriorityQueue<>(new AwaitingOrderComparatorAscending()))
+                .addListener(new AwaitingBuyOrderListener(agentWindowManager));
+        awaitingActivationSell = new ListenableQueue<>(new PriorityQueue<>(new AwaitingOrderComparatorDescending()))
+                .addListener(new AwaitingSellOrderListener(agentWindowManager));
 
         priceTracker = new PriceTracker(symbol,exchangeName);
         this.symbol = symbol;
 
-        settlementsToSend = new LinkedList<>();
+        settlementsToSend = new ListenableQueue<>(new LinkedList<TransactionSettlement>())
+                .addListener(new SentSettlementsListener(agentWindowManager));
+
         lastId = ExchangeOrderingID.getZero();
     }
 
