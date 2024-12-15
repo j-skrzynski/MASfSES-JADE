@@ -1,6 +1,6 @@
 package org.example.stockexchange.listeners;
 
-import org.example.stockexchange.settlements.TransactionSettlement;
+import org.example.logic.stockexchange.settlements.TransactionSettlement;
 import org.example.visualization.AgentWindow;
 import org.example.visualization.AgentWindowManager;
 
