@@ -3,6 +3,7 @@ package org.example.logic.broker;
 import org.example.datamodels.TransactionResult;
 import org.example.datamodels.WalletRecord;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -10,6 +11,11 @@ public class StockBroker {
 
     public HashMap<String, InvestorAccount> accounts;
     public List<String> supportedStockMarketsNames;
+
+    public StockBroker() {
+        accounts = new HashMap<>();
+        supportedStockMarketsNames = new ArrayList<>();
+    }
 
     public void registerTrader(String name){
         InvestorAccount investorAccount = new InvestorAccount();

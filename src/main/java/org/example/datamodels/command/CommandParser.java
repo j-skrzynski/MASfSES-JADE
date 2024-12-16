@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.example.datamodels.TransactionResult;
 import org.example.datamodels.order.AwaitingOrder;
 import org.example.datamodels.order.OrderParser;
 
@@ -46,10 +47,14 @@ public class CommandParser {
 
                 // Sprawdzamy, czy jest to AwaitingOrder
                 if (jsonObject.has("order") && jsonObject.has("awaiting")) {
-                    // Parsujemy jako AwaitingOrder
                     OrderParser op = new OrderParser();
                     AwaitingOrder awaitingOrder = op.parseAwaitingOrder(jsonObject);
                     argumentsList.add(awaitingOrder);
+                }
+                // Sprawdzamy, czy jest to TransactionResult
+                else if (isTransactionResult(jsonObject)) {
+                    TransactionResult transactionResult = parseTransactionResult(jsonObject);
+                    argumentsList.add(transactionResult);
                 } else {
                     // Inny obiekt JSON, traktujemy go ogólnie
                     argumentsList.add(gson.fromJson(jsonObject, Object.class));
@@ -62,16 +67,12 @@ public class CommandParser {
                 if (element.getAsJsonPrimitive().isString()) {
                     argumentsList.add(element.getAsString());
                 } else if (element.getAsJsonPrimitive().isNumber()) {
-                    // Jeśli liczba, sprawdzamy, czy to int, long, double
                     try {
-                        // Próbujemy jako Double
                         argumentsList.add(element.getAsDouble());
                     } catch (NumberFormatException e) {
-                        // Jeśli się nie udało, próbujemy jako Long
                         try {
                             argumentsList.add(element.getAsLong());
                         } catch (NumberFormatException ex) {
-                            // Jeśli to nie Long, próbujemy jako Integer
                             argumentsList.add(element.getAsInt());
                         }
                     }
@@ -83,6 +84,26 @@ public class CommandParser {
 
         return argumentsList;
     }
+
+    // Sprawdzenie, czy JsonObject ma pola charakterystyczne dla TransactionResult
+    private boolean isTransactionResult(JsonObject jsonObject) {
+        return jsonObject.has("toPay") && jsonObject.has("toWithdraw") &&
+                jsonObject.has("soldStock") && jsonObject.has("boughtStock") &&
+                jsonObject.has("shortName") && jsonObject.has("brokerOrderId");
+    }
+
+    // Parsowanie TransactionResult z JsonObject
+    private TransactionResult parseTransactionResult(JsonObject jsonObject) {
+        Double toPay = jsonObject.get("toPay").getAsDouble();
+        Double toWithdraw = jsonObject.get("toWithdraw").getAsDouble();
+        Long soldStock = jsonObject.get("soldStock").getAsLong();
+        Long boughtStock = jsonObject.get("boughtStock").getAsLong();
+        String shortName = jsonObject.get("shortName").getAsString();
+        String brokerOrderId = jsonObject.get("brokerOrderId").getAsString();
+
+        return new TransactionResult(toPay, toWithdraw, soldStock, boughtStock, shortName, brokerOrderId);
+    }
+
 
 
 }

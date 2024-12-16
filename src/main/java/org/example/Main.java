@@ -6,6 +6,7 @@ import jade.core.Runtime;
 import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
 import jade.wrapper.ControllerException;
+import org.example.agents.broker.BrokerAgent;
 import org.example.agents.stockexchange.StockExchangeAgent;
 
 public class Main {
@@ -29,7 +30,19 @@ public class Main {
                     agentArgs                  // Argumenty agenta
             );
 
+
+            Object[] agentArgs2 = {}; // Argumenty przekazywane do agenta
+            AgentController brokerAgent = mainContainer.createNewAgent(
+                    "Broker1",                      // Nazwa agenta
+                    BrokerAgent.class.getName(), // Klasa agenta
+                    agentArgs2                 // Argumenty agenta
+            );
+
+
+
             gpwAgent.start();
+            brokerAgent.start();
+
             System.out.println("GPW agent started!");
 
 //            AgentController dummyAgent = mainContainer.createNewAgent(

@@ -171,3 +171,63 @@ Trader4/1#PLACE_ORDER;LIMIT;BUY;WDA;XD;300;102
 
 
 ```
+
+
+
+```
+komendy brokera
+
+{
+    "command": "REGISTER",
+    "exchangeName": "",
+    "traderName": "Trader1",
+    "brokerOrderId": "",
+    "arguments": []
+}
+
+
+{
+    "command": "DEPOSIT",
+    "exchangeName": "",
+    "traderName": "Trader1",
+    "brokerOrderId": "",
+    "arguments": [5000]
+}
+
+{
+    "command": "GET_BALANCE",
+    "exchangeName": "",
+    "traderName": "Trader1",
+    "brokerOrderId": "",
+    "arguments": [1000]
+}
+
+{
+    "command": "WITHDRAW",
+    "exchangeName": "",
+    "traderName": "Trader1",
+    "brokerOrderId": "",
+    "arguments": [1000]
+}
+
+{
+    "command": "PLACE_ORDER",
+    "exchangeName": "GPW",
+    "traderName": "Trader1",
+    "brokerOrderId": "",
+    "arguments": [
+        {
+            "order": {
+              "symbol": {"shortName": "AAPL"},
+              "orderType": "BUY",
+              "price": 150.0,
+              "quantity": 1000,
+              "expirationSecpification": "D"
+            },
+            "awaiting": false,
+            "price": 0.0
+        }
+    ]
+}
+
+```

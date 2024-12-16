@@ -5,6 +5,7 @@ import org.example.datamodels.StockSymbol;
 import org.example.logic.stockexchange.utils.ExchangeDate;
 import org.example.logic.stockexchange.order.marketorder.ExchangeOrder;
 import org.example.logic.stockexchange.settlements.TransactionSettlement;
+import org.example.logic.stockexchange.utils.OrderSubmitter;
 
 import java.util.HashMap;
 import java.util.List;
@@ -86,6 +87,17 @@ public class StockExchange {
         OrderSheet orderSheet = orderSheets.get(symbol);
         if (orderSheet != null) {
             return orderSheet.popNextSettlement();
+        }
+        return null;
+    }
+
+    /**
+     * Fetches and removes the next available transaction cancelation for a specific stock.
+     */
+    public OrderSubmitter popNextCancelationnotification(StockSymbol symbol) {
+        OrderSheet orderSheet = orderSheets.get(symbol);
+        if (orderSheet != null) {
+            return orderSheet.popNextCancelation();
         }
         return null;
     }

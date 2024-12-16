@@ -4,6 +4,7 @@ package org.example.logic.broker;
 import org.example.datamodels.StockSymbol;
 import org.example.datamodels.TransactionResult;
 import org.example.datamodels.WalletRecord;
+import org.example.datamodels.order.OrderType;
 import org.example.global.StockPriceDictionary;
 
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ public class InvestorAccount {
     }
 
     private Double calculateRequiredMoney(InvestorRequest req){
-        if(req.getAction() == OrderAction.BUY){
+        if(req.getAction() == OrderType.BUY){
             if(req.isLimitless()){
                 Double lastUnitPriceOfStock = StockPriceDictionary.getPrice(req.getShortName(), req.getStockExchangeName());
                 return lastUnitPriceOfStock*req.getAmount()*1.15;

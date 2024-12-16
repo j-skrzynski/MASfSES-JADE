@@ -1,6 +1,7 @@
 package org.example.agents.stockexchange;
 
 import jade.core.Agent;
+import org.example.agents.stockexchange.behaviours.CancelationSendingBehaviour;
 import org.example.agents.stockexchange.behaviours.OrderProcessingBehaviour;
 import org.example.agents.stockexchange.behaviours.SettlementSendingBehaviour;
 import org.example.agents.stockexchange.behaviours.TimeHandlingBehaviour;
@@ -29,6 +30,7 @@ public class StockExchangeAgent extends Agent {
         addBehaviour(new TimeHandlingBehaviour(this, 1000, stockExchange.getMillisecondsPerSession(), 2000));
         addBehaviour(new OrderProcessingBehaviour(this));
         addBehaviour(new SettlementSendingBehaviour(this,1000));
+        addBehaviour(new CancelationSendingBehaviour(this,1000));
     }
 
 }
