@@ -1,6 +1,8 @@
 package org.example.agents.broker.behaviours;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.example.agents.broker.BrokerAgent;
@@ -14,11 +16,13 @@ public class BrokerOrderProcessingBehaviour extends CyclicBehaviour {
 
     private final BrokerAgent agent;
     private final CommandParser commandParser;
+    private final Gson gson;
 
     public BrokerOrderProcessingBehaviour(BrokerAgent agent) {
         super(agent);
         this.agent = agent;
         this.commandParser = new CommandParser();
+        this.gson = new Gson();
     }
 
     private void sendReply(ACLMessage msg, String content) {
@@ -43,6 +47,11 @@ public class BrokerOrderProcessingBehaviour extends CyclicBehaviour {
                         agent.getStockBroker().registerTrader(command.getTraderName());
                         sendReply(msg, "Trader " + command.getTraderName() + " registered successfully.");
                         break;
+                    case "ADD_MARKET":
+                        String marketName = (String) command.getArguments().get(0);
+                        agent.getStockBroker().addStockExchange(marketName);
+                        sendReply(msg, "Added");
+                        break;
                     case "DEPOSIT":
                         double depositAmount = (double) command.getArguments().get(0);
                         agent.getStockBroker().deposit(command.getTraderName(), depositAmount);
@@ -59,7 +68,16 @@ public class BrokerOrderProcessingBehaviour extends CyclicBehaviour {
                             throw new IllegalArgumentException("PLACE_ORDER requires an AwaitingOrder");
                         }
                         InvestorRequest req = new InvestorRequest((AwaitingOrder)orderSpec, command.getStockExchangeName());
-                        agent.getStockBroker().placeOrder(command.getTraderName(), req);
+                        String newOrderId = agent.getStockBroker().placeOrder(command.getTraderName(), req);
+                        command.setBrokerOrderId(newOrderId);
+                        AID exchangeAddress = agent.getStockBroker().getExchangeAdressee(command.getExchangeName());
+
+                        ACLMessage forwardMsg = new ACLMessage(ACLMessage.REQUEST);
+                        forwardMsg.addReceiver(exchangeAddress);
+                        forwardMsg.setContent(gson.toJson(command));
+                        agent.send(forwardMsg);
+                        
+                        //wyśli zjsonowany command na adres giełdy
                         sendReply(msg, "Order placed successfully for " + command.getTraderName() + ".");
                         break;
                     case "CANCEL_ORDER":

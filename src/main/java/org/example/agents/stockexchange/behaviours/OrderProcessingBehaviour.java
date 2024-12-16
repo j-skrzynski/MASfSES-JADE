@@ -27,7 +27,7 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
     public OrderProcessingBehaviour(StockExchangeAgent agent) {
         super(agent);
         this.agent = agent;
-        this.gson = new Gson(); // JSON parser
+        this.gson = new Gson();
     }
 
     @Override
@@ -54,15 +54,14 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
     }
 
     private String handleRequest(String content, AID sender) throws Exception {
-        // Parsowanie JSON-a
         CommandParser cp = new CommandParser();
         Command command = cp.parseCommand(content);
 
         String cmd = command.getCommand();
         List<Object> arguments = command.getArguments();
-        String traderName = command.getTraderName();  // Nowe pole
-        String brokerName = command.getBrokerName();  // Nowe pole
-        String brokerOrderId = command.getBrokerOrderId();  // Nowe pole
+        String traderName = command.getTraderName();
+        String brokerName = command.getBrokerName();
+        String brokerOrderId = command.getBrokerOrderId();
 
         switch (cmd) {
             case "ADD_STOCK":

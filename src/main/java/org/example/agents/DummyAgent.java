@@ -15,9 +15,14 @@ public class DummyAgent extends Agent {
 
         // Wiadomości do wysłania
         String[] messages = {
-                "#ADD_STOCK;TestStock;XD;20;1000",
-                "Trader1#PLACE_ORDER;LIMIT;SELL;WDD/5;XD;100;102",
-                "Trader2#PLACE_ORDER;NOLIMIT;BUY;WDD/5;XD;100"
+                "{\n" +
+                        "  \"command\": \"ADD_STOCK\",\n" +
+                        "  \"arguments\": [\"Apple\", \"AAPL\", 150.0, 1000000],\n" +
+                        "  \"traderName\": \"\",\n" +
+                        "  \"brokerName\": \"\",\n" +
+                        "  \"exchangeName\": \"\",\n" +
+                        "  \"brokerOrderId\": \"\"\n" +
+                        "}\n",
         };
 
         for (String msg : messages) {

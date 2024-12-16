@@ -58,12 +58,12 @@ public class InvestorAccount {
 
 
 
-    public void placeOrder(InvestorRequest req/* tutaj coś co bardziej jest życzeniem*/){
+    public String placeOrder(InvestorRequest req/* tutaj coś co bardziej jest życzeniem*/){
         String orderId = UUID.randomUUID().toString();
 
 
         StockSymbol stock = getStockIdByShortName(req.getShortName());
-        Long requestedStockAmount = req.getAmount();
+        Long requestedStockAmount =  req.getAction() == OrderType.SELL ? req.getAmount() : 0;
         Long currentStockAmount = getCurrentStockBalance(stock.getShortName());
         Double requiredMoney = calculateRequiredMoney(req); //if no limit then calculate another way
         Double currentMoney = this.balance;
@@ -84,7 +84,7 @@ public class InvestorAccount {
         this.balance-=requiredMoney;
 
         currentOrders.put(orderId, rec);
-
+        return orderId;
     }
 
     public void processTransactionResult(TransactionResult tr){

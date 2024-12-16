@@ -1,5 +1,6 @@
 package org.example.logic.broker;
 
+import jade.core.AID;
 import org.example.datamodels.TransactionResult;
 import org.example.datamodels.WalletRecord;
 
@@ -50,11 +51,12 @@ public class StockBroker {
         accounts.get(name).withdrawMoney(amount);
     }
 
-    public void placeOrder(String name, InvestorRequest req) {
+    public String placeOrder(String name, InvestorRequest req) {
         if (!accounts.containsKey(name)) {
             throw new RuntimeException("Trader does not exist");
         }
-        accounts.get(name).placeOrder(req);
+        return accounts.get(name).placeOrder(req);
+        //redirect order to stock exchange
     }
 
     public void cancelOrder(String name, String orderId) {
@@ -69,5 +71,19 @@ public class StockBroker {
             throw new RuntimeException("Trader does not exist");
         }
         accounts.get(name).processTransactionResult(tr);
+    }
+
+    public AID getExchangeAdressee(String exchangeName){
+        if(this.supportedStockMarketsNames.contains(exchangeName)) {
+            AID agentAID = new AID(exchangeName, AID.ISLOCALNAME);
+            return agentAID;
+        }
+        else{
+            throw new RuntimeException("Specified stock market is not supported by this broker");
+        }
+    }
+
+    public void addStockExchange(String exchangeName){
+        this.supportedStockMarketsNames.add(exchangeName);
     }
 }

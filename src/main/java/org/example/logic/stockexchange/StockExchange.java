@@ -1,5 +1,7 @@
 package org.example.logic.stockexchange;
 
+import org.example.global.StockDictionary;
+import org.example.global.StockPriceDictionary;
 import org.example.logic.stockexchange.order.PlacableDisposition;
 import org.example.datamodels.StockSymbol;
 import org.example.logic.stockexchange.utils.ExchangeDate;
@@ -29,6 +31,7 @@ public class StockExchange {
         this.currentSessionStart = lastSessionClosingDate;
         this.millisecondsPerSession = millisecondsPerSession;
         this.sessionsPerYear = sessionsPerYear;
+        StockPriceDictionary.addStockMarket(name);
     }
     public StockExchange(String name, Long millisecondsPerSession, Long sessionsPerYear){
         this(name, new ExchangeDate(),millisecondsPerSession,sessionsPerYear);
@@ -53,6 +56,7 @@ public class StockExchange {
     public void addStock(StockSymbol symbol) {
         if (!orderSheets.containsKey(symbol)) {
             orderSheets.put(symbol, new OrderSheet(symbol, name));
+            StockDictionary.registerStockSymbol(symbol);
         } else {
             throw new IllegalArgumentException("Stock already exists in the exchange.");
         }

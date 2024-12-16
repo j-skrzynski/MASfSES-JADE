@@ -27,7 +27,7 @@ public class InvestorRequest {
                 ao.getOrder().getSymbol().getShortName(),
                 ao.getOrder().getOrderType(),
                 ao.getOrder().getPrice(),
-                !ao.getOrder().hasPriceLimit(),
+                ao.getOrder().hasPriceLimit()==false,
                 stockExchangeName
         );
     }

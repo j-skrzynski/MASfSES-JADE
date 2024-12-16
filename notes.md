@@ -222,6 +222,7 @@ komendy brokera
               "orderType": "BUY",
               "price": 150.0,
               "quantity": 1000,
+              "hasLimit": true,
               "expirationSecpification": "D"
             },
             "awaiting": false,
@@ -230,4 +231,29 @@ komendy brokera
     ]
 }
 
+
+
+
+
+
+{
+    "command": "PLACE_ORDER",
+    "exchangeName": "GPW",
+    "traderName": "Trader1",
+    "brokerOrderId": "",
+    "arguments": [
+        {
+            "order": {
+              "symbol": {"shortName": "AAPL"},
+              "orderType": "BUY",
+              "price": 5.0,
+              "quantity": 1000,
+              "hasLimit": true,
+              "expirationSecpification": "D"
+            },
+            "awaiting": false,
+            "price": 0.0
+        }
+    ]
+}
 ```

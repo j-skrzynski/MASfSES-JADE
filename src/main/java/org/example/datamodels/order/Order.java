@@ -12,12 +12,20 @@ public class Order implements Comparable<Order> {
     private boolean hasLimit;
     protected String expirationSecpification;
 
+    public void setHasLimit(boolean hasLimit) {
+        this.hasLimit = hasLimit;
+    }
+
+    public boolean hasLimit() {
+        return hasLimit;
+    }
+
     public Order(StockSymbol symbol, OrderType orderType, Double price, Long quantity) {
         this.symbol = symbol;
         this.orderType = orderType;
         this.quantity = quantity;
 
-        if (price == null) {    //zlecenie nolimit
+        if (price == null || price.compareTo(0.0) == 0) {    //zlecenie nolimit
             this.price = getInfValue(orderType);
             this.hasLimit = false;
         } else {
