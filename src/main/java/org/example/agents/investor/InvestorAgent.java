@@ -3,10 +3,7 @@ package org.example.agents.investor;
 import jade.core.Agent;
 import org.example.agents.investor.behaviours.PriceCheckerBehaviour;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class InvestorAgent extends Agent {
     /*
@@ -15,11 +12,25 @@ public class InvestorAgent extends Agent {
     - behaviour for deciding on broker offer
     -
      */
-    protected HashMap<InvestorPriceRecordLabel, Double> observedStocks;
+    protected Set<InvestorPriceRecordLabel> observedStocks;
+    protected HashMap<InvestorPriceRecordLabel, Double> bestBuyPrice;
+    protected HashMap<InvestorPriceRecordLabel, Double> bestSellPrice;
+    protected HashMap<InvestorPriceRecordLabel, Double> lastPrice;
+
 
     public InvestorAgent() {
-        observedStocks = new HashMap<>();
+        observedStocks = new HashSet<>();
+        bestBuyPrice = new HashMap<>();
+        bestSellPrice = new HashMap<>();
+        lastPrice = new HashMap<>();
 
+    }
+
+    private void registerObservedStock(InvestorPriceRecordLabel label){
+        observedStocks.add(label);
+        bestBuyPrice.put(label, null);
+        bestSellPrice.put(label, null);
+        lastPrice.put(label, null);
     }
 
     @Override
@@ -28,16 +39,22 @@ public class InvestorAgent extends Agent {
         Object[] args = getArguments();
         Collection<InvestorPriceRecordLabel> stocksToObserve = (Collection<InvestorPriceRecordLabel>) args[0];
         for (InvestorPriceRecordLabel stock : stocksToObserve) {
-            observedStocks.put(stock,null);
+            registerObservedStock(stock);
         }
-        this.addBehaviour(new PriceCheckerBehaviour(this, 1000L)); // checks prices every second
+        this.addBehaviour(new PriceCheckerBehaviour(this, 5000L)); // checks prices every second
     }
 
 
     public Set<InvestorPriceRecordLabel> getObservedStocks() {
-        return observedStocks.keySet();
+        return observedStocks;
     }
-    public void updateStoredPrice(InvestorPriceRecordLabel label, Double price){
-        observedStocks.put(label, price);
+    public void updateBuyPrice(InvestorPriceRecordLabel label, Double price){
+        bestBuyPrice.put(label, price);
+    }
+    public void updateSellPrice(InvestorPriceRecordLabel label, Double price){
+        bestSellPrice.put(label, price);
+    }
+    public void updateLastPrice(InvestorPriceRecordLabel label, Double price){
+        lastPrice.put(label, price);
     }
 }

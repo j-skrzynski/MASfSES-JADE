@@ -61,7 +61,22 @@ Trader4/1#PLACE_ORDER;LIMIT;BUY;WDA;XD;300;102
   "brokerOrderId": ""
 }
 
-
+{
+  "command": "GET_TOP_BUY",
+  "arguments": ["AAPL"],
+  "traderName": "",
+  "brokerName": "",
+  "exchangeName": "",
+  "brokerOrderId": ""
+}
+{
+  "command": "GET_TOP_SELL",
+  "arguments": ["AAPL"],
+  "traderName": "",
+  "brokerName": "",
+  "exchangeName": "",
+  "brokerOrderId": ""
+}
 {
   "command": "PLACE_ORDER",
   "arguments": [{

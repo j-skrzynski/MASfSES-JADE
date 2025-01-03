@@ -84,6 +84,7 @@ public class BrokerOrderProcessingBehaviour extends CyclicBehaviour {
                         //wyśli zjsonowany command na adres giełdy
                         sendReply(msg, "Order placed successfully for " + command.getTraderName() + ".");
                         break;
+
                     case "CANCEL_ORDER":
                         String orderId = command.getBrokerOrderId();
                         agent.getStockBroker().cancelOrder(command.getTraderName(), orderId);

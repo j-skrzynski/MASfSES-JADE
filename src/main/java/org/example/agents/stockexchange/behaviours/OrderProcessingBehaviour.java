@@ -159,7 +159,8 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
         String shortName = (String) arguments.get(0);
         StockSymbol stockSymbol = agent.getStockExchange().getSymbolByShortName(shortName);
         List<ExchangeOrder> orders = agent.getStockExchange().getTopBuyOffers(stockSymbol);
-        return "Top Buy Offers: " + orders.toString();
+        Gson gson = new Gson();
+        return gson.toJson(orders);
     }
 
     private String getTopSell(List<Object> arguments) {
@@ -169,7 +170,8 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
         String shortName = (String) arguments.get(0);
         StockSymbol stockSymbol = agent.getStockExchange().getSymbolByShortName(shortName);
         List<ExchangeOrder> orders = agent.getStockExchange().getTopSellOffers(stockSymbol);
-        return "Top Sell Offers: " + orders.toString();
+        Gson gson = new Gson();
+        return gson.toJson(orders);
     }
 
     private ExchangeDate processExpirationSpecification(String expiration) {
