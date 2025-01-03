@@ -19,6 +19,7 @@ public class BrokerAgent extends Agent {
     protected void setup() {
         // Inicjalizacja brokera
         stockBroker = new StockBroker();
+        stockBroker.addStockExchange("GPW");
 
         System.out.println("BrokerAgent " + getLocalName() + " started.");
 

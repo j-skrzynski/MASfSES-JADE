@@ -26,8 +26,12 @@ public class BrokerOrderProcessingBehaviour extends CyclicBehaviour {
     }
 
     private void sendReply(ACLMessage msg, String content) {
+        sendReply(msg,content,ACLMessage.INFORM);
+    }
+
+    private void sendReply(ACLMessage msg, String content, int type) {
         ACLMessage reply = msg.createReply();
-        reply.setPerformative(ACLMessage.INFORM);
+        reply.setPerformative(type);
         reply.setContent(content);
         agent.send(reply);
     }
@@ -35,7 +39,7 @@ public class BrokerOrderProcessingBehaviour extends CyclicBehaviour {
     @Override
     public void action() {
         ACLMessage msg = agent.receive();
-        if (msg != null) {
+        if (msg != null && msg.getPerformative() != ACLMessage.FAILURE){
             try {
                 String jsonContent = msg.getContent();
 
@@ -94,20 +98,26 @@ public class BrokerOrderProcessingBehaviour extends CyclicBehaviour {
                         break;
                     case "SETTLEMENT":
                         Object settlementDetails = command.getArguments().get(0);
-                        if (!(settlementDetails instanceof TransactionResult)) {
-                            throw new IllegalArgumentException("SETTLEMENT requires a TransactionResult object");
+                        if (settlementDetails instanceof String) {
+                            TransactionResult transactionResult = gson.fromJson((String) settlementDetails, TransactionResult.class);
+                            agent.getStockBroker().notifyOnSettlement(command.getTraderName(), transactionResult);
+                        } else {
+                            throw new IllegalArgumentException("SETTLEMENT requires a TransactionResult object as JSON string.");
                         }
-                        agent.getStockBroker().notifyOnSettlement(command.getTraderName(), (TransactionResult) settlementDetails);
+                        break;
+                    case "INFORM":
+                        break;
+                    case "ERROR":
                         break;
                     default:
                         sendReply(msg, "Unknown command: " + command.getCommand());
                         break;
                 }
             } catch (IllegalArgumentException | JsonSyntaxException e) {
-                sendReply(msg, "Error processing request: Invalid JSON command - " + e.getMessage());
+                sendReply(msg, "Error processing request: Invalid JSON command - " + e.getMessage(), ACLMessage.FAILURE);
                 e.printStackTrace();
             } catch (Exception e) {
-                sendReply(msg, "Error processing request: " + e.getMessage());
+                sendReply(msg, "Error processing request: " + e.getMessage(), ACLMessage.FAILURE);
                 e.printStackTrace();
             }
         } else {

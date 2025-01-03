@@ -1,5 +1,7 @@
 package org.example.agents.stockexchange.behaviours;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -33,7 +35,7 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
     @Override
     public void action() {
         ACLMessage msg = agent.receive();
-        if (msg != null) {
+        if (msg != null && msg.getPerformative() != ACLMessage.FAILURE) {
             String content = msg.getContent();
             ACLMessage reply = msg.createReply();
 
@@ -41,6 +43,7 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
                 AID sender = msg.getSender();
                 String response = handleRequest(content, sender);
                 reply.setPerformative(ACLMessage.INFORM);
+                reply.setOntology("Broker-StockExchange");
                 reply.setContent(response);
             } catch (Exception e) {
                 reply.setPerformative(ACLMessage.FAILURE);
@@ -133,7 +136,15 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
         }
 
         agent.getStockExchange().placeOrder(symbol, disposition);
-        return "OK";
+
+        JsonObject commandObject = new JsonObject();
+        commandObject.addProperty("command", "INFORM");
+        commandObject.addProperty("exchangeName", agent.getStockExchange().getName());
+        commandObject.addProperty("traderName", traderName);
+        commandObject.addProperty("brokerOrderId", brokerName);
+        commandObject.add("arguments", new JsonArray());
+        Gson gson = new Gson();
+        return gson.toJson(commandObject);
     }
 
     private String advanceSession() {

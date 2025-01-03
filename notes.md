@@ -199,7 +199,7 @@ komendy brokera
     "exchangeName": "",
     "traderName": "Trader1",
     "brokerOrderId": "",
-    "arguments": [1000]
+    "arguments": []
 }
 
 {
@@ -256,4 +256,27 @@ komendy brokera
         }
     ]
 }
+
+
 ```
+
+
+
+{
+"command": "PLACE_ORDER",
+"arguments": [{
+"order": {
+"symbol": {"shortName": "AAPL"},
+"orderType": "SELL",
+"price": 5.0,
+"quantity": 500,
+"expirationSecpification": "D"
+},
+"awaiting": false,
+"price": 0.0
+}],
+"traderName": "JohnDoe",
+"brokerName": "XYZBroker",
+"exchangeName": "GPW",
+"brokerOrderId": ""
+}

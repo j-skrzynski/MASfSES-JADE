@@ -1,5 +1,6 @@
 package org.example.agents.stockexchange.behaviours;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -55,6 +56,7 @@ public class CancelationSendingBehaviour extends TickerBehaviour {
                 commandObject.addProperty("exchangeName", agent.getStockExchange().getName());
                 commandObject.addProperty("traderName", adressee.getSubmitterName());
                 commandObject.addProperty("brokerOrderId", adressee.getBrokerOrderId());
+                commandObject.add("arguments", new JsonArray());
 
                 // Dodajemy argumenty (w tym przypadku ID anulowanego zlecenia)
 //                JsonArray arguments = new JsonArray();
@@ -62,7 +64,7 @@ public class CancelationSendingBehaviour extends TickerBehaviour {
 //                commandObject.add("arguments", arguments);
 
 
-                message.setContent(commandObject.toString());
+                message.setContent(commandObject.getAsString());
                 message.addReceiver(adressee.getBroker());
                 agent.send(message);
 

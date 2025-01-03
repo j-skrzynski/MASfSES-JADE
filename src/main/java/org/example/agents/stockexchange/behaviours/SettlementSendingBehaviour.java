@@ -1,5 +1,9 @@
 package org.example.agents.stockexchange.behaviours;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.example.agents.stockexchange.StockExchangeAgent;
@@ -43,7 +47,18 @@ public class SettlementSendingBehaviour extends TickerBehaviour {
             while (settlement != null) {
                 ACLMessage message = new ACLMessage(ACLMessage.INFORM);
                 logger.info("["+agent.getStockExchange().getName()+"] Sending "+settlement.toJson() + " to " + settlement.getAddressee().getBroker());
-                message.setContent(settlement.getTransactionResult());
+
+                JsonObject commandObject = new JsonObject();
+                commandObject.addProperty("command", "SETTLEMENT");
+                commandObject.addProperty("exchangeName", agent.getStockExchange().getName());
+                commandObject.addProperty("traderName", settlement.getAddressee().getSubmitterName());
+                commandObject.addProperty("brokerOrderId", settlement.getAddressee().getBrokerOrderId());
+                Gson gson = new Gson();
+                JsonArray jsonArray = new JsonArray();
+                jsonArray.add(gson.toJsonTree(settlement.getTransactionResult()));
+                commandObject.add("arguments", jsonArray );
+
+                message.setContent(gson.toJson(commandObject));
                 message.addReceiver(settlement.getAddressee().getBroker());
                 agent.send(message);
 
