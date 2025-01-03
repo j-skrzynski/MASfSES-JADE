@@ -31,6 +31,7 @@ public class StockExchange {
         this.currentSessionStart = lastSessionClosingDate;
         this.millisecondsPerSession = millisecondsPerSession;
         this.sessionsPerYear = sessionsPerYear;
+        this.millisecondsSinceStart = 0L;
         StockPriceDictionary.addStockMarket(name);
     }
     public StockExchange(String name, Long millisecondsPerSession, Long sessionsPerYear){
@@ -163,7 +164,7 @@ public class StockExchange {
     }
 
     public void addMillisecondsSinceStart(Long millisecondsSinceStart) {
-        this.millisecondsSinceStart = millisecondsSinceStart;
+        this.millisecondsSinceStart += millisecondsSinceStart;
     }
 
     public Long getMillisecondsSinceStart() {

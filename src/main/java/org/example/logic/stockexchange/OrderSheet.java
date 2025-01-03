@@ -247,12 +247,12 @@ public class OrderSheet {
     }
 
     private void expire(ExchangeDate date){
-        buyOrders.removeIf(order -> order.isExpired(date));
-        sellOrders.removeIf(order -> order.isExpired(date));
-        noLimitBuy.removeIf(order -> order.isExpired(date));
-        noLimitSell.removeIf(order -> order.isExpired(date));
-        awaitingActivationBuy.removeIf(awaitingExchangeOrder -> awaitingExchangeOrder.getActivatedOrder().isExpired(date));
-        awaitingActivationSell.removeIf(awaitingExchangeOrder -> awaitingExchangeOrder.getActivatedOrder().isExpired(date));
+//        buyOrders.removeIf(order -> order.isExpired(date));
+//        sellOrders.removeIf(order -> order.isExpired(date));
+//        noLimitBuy.removeIf(order -> order.isExpired(date));
+//        noLimitSell.removeIf(order -> order.isExpired(date));
+//        awaitingActivationBuy.removeIf(awaitingExchangeOrder -> awaitingExchangeOrder.getActivatedOrder().isExpired(date));
+//        awaitingActivationSell.removeIf(awaitingExchangeOrder -> awaitingExchangeOrder.getActivatedOrder().isExpired(date));
 
         // Obsługa buyOrders
         buyOrders.removeIf(order -> {

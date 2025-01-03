@@ -1,5 +1,6 @@
 package org.example.agents.stockexchange.behaviours;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import jade.core.behaviours.TickerBehaviour;
@@ -63,8 +64,8 @@ public class CancelationSendingBehaviour extends TickerBehaviour {
 //                arguments.add(brokerOrderId);
 //                commandObject.add("arguments", arguments);
 
-
-                message.setContent(commandObject.getAsString());
+                Gson gson = new Gson();
+                message.setContent(gson.toJson(commandObject));
                 message.addReceiver(adressee.getBroker());
                 agent.send(message);
 
