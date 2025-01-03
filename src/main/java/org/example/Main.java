@@ -23,7 +23,7 @@ public class Main {
             mainContainer.start();
             System.out.println("JADE container started!");
 
-
+            // Tworzenie i uruchamianie agentów
             Object[] agentArgs = {"GPW"}; // Argumenty przekazywane do agenta
             AgentController gpwAgent = mainContainer.createNewAgent(
                     "GPW",                      // Nazwa agenta
@@ -31,15 +31,12 @@ public class Main {
                     agentArgs                  // Argumenty agenta
             );
 
-
             Object[] agentArgs2 = {}; // Argumenty przekazywane do agenta
             AgentController brokerAgent = mainContainer.createNewAgent(
                     "Broker1",                      // Nazwa agenta
                     BrokerAgent.class.getName(), // Klasa agenta
                     agentArgs2                 // Argumenty agenta
             );
-
-
 
             gpwAgent.start();
             brokerAgent.start();
@@ -51,8 +48,23 @@ public class Main {
                     DummyAgent.class.getName(),
                     null
             );
+
             dummyAgent.start();
             System.out.println("DummyAgent started and sending messages!");
+
+            // Tworzenie agenta Sniffer
+            String[] snifferTargets = {"GPW", "Broker1", "DummyAgent"};
+            String snifferTargetArgs = String.join(";", snifferTargets);
+
+            AgentController snifferAgent = mainContainer.createNewAgent(
+                    "SnifferAgent",
+                    "jade.tools.sniffer.Sniffer", // Klasa agenta Sniffer
+                    new Object[]{snifferTargetArgs} // Przekazanie nazw agentów
+            );
+
+            snifferAgent.start();
+
+            System.out.println("SnifferAgent started and listening to messages!");
 
         } catch (ControllerException e) {
             e.printStackTrace();

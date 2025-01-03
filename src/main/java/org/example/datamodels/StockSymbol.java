@@ -27,4 +27,8 @@ public class StockSymbol {
     public Long getShares() {
         return shares;
     }
+
+    public String toString() {
+        return this.getShortName();
+    }
 }

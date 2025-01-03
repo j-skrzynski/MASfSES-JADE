@@ -3,6 +3,7 @@ package org.example.logic.broker;
 import jade.core.AID;
 import org.example.datamodels.TransactionResult;
 import org.example.datamodels.WalletRecord;
+import org.example.global.StockDictionary;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,5 +86,12 @@ public class StockBroker {
 
     public void addStockExchange(String exchangeName){
         this.supportedStockMarketsNames.add(exchangeName);
+    }
+
+    public void addStockToAccount(String name, String shortName, Long amount) {
+        if(!accounts.containsKey(name)){
+            throw new RuntimeException("Trader does not exist");
+        }
+        accounts.get(name).addStockToAccount(StockDictionary.getStockIdByShortName(shortName), amount);
     }
 }

@@ -49,7 +49,7 @@ public class InvestorAccount {
         //iff greater than 0
         if(amount > 0) {
             if (stocks.containsKey(stockId.getShortName())) {
-                stocks.get(stockId).add(amount);
+                stocks.get(stockId.getShortName()).add(amount);
             } else {
                 stocks.put(stockId.getShortName(), new WalletRecord(stockId, amount));
             }
@@ -129,4 +129,16 @@ public class InvestorAccount {
     public Double getBalance() {
         return Double.valueOf(balance);
     }
+
+    public void addStockToAccount(StockSymbol stockId, Long amount){
+        if(amount < 0){
+            throw new RuntimeException("Stock amount is less than zero");
+        }
+        if (stocks.containsKey(stockId.getShortName())) {
+            stocks.get(stockId).add(amount);
+        } else {
+            stocks.put(stockId.getShortName(), new WalletRecord(stockId, amount));
+        }
+    }
+
 }
