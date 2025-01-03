@@ -20,3 +20,10 @@ This way of supplying data into system provides a signifficant advantage of caus
 Description above provides a good explanation on how to validate the simulation by correct calibration. Depending on the goal of simulation one need either to set the amount of shares offered by imaginary trader higher or lower. High values are good for testing a small investor strategy, while smaller values may be good for testing overall impact of some regulations, allowing to divert from historical flow of price more easily with less agents involved.
 
 Simplest scenario of providing calibration data is giving just SELL offers however in order to simmulate more realistic behaviour it is needed to provide buy and sell orders with spread that is to be determined manualy, as precise data is expensive to gather.
+
+# Hypothesis to be verified
+
+## Testing of a greedy strategy
+
+## Testing how instable may the market become under influence of random traders
+

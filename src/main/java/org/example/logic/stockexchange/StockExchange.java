@@ -156,7 +156,9 @@ public class StockExchange {
     public void loadArtificialDataForSheet(OrderSheet sheet){
         String shortName = sheet.getSymbol().getShortName();
         EnvRecord rec = this.baseline.getNextEnvRec(shortName);
-        sheet.placeDisposition(new ExchangeOrder(sheet.getSymbol(), OrderType.SELL,currentSessionStart.getNexSessionDate(), rec.price(), rec.quantity(), new OrderSubmitter("Env", new AID("imaginaryBroker",false),"")));
+        if(rec != null) {
+            sheet.placeDisposition(new ExchangeOrder(sheet.getSymbol(), OrderType.SELL, currentSessionStart.getNexSessionDate(), rec.price(), rec.quantity(), new OrderSubmitter("Env", new AID("imaginaryBroker", false), "")));
+        }
     }
 
     /**

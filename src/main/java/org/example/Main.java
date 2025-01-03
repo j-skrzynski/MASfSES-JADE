@@ -8,8 +8,11 @@ import jade.wrapper.AgentController;
 import jade.wrapper.ControllerException;
 import org.example.agents.DummyAgent;
 import org.example.agents.broker.BrokerAgent;
+import org.example.agents.investor.InvestorAgent;
+import org.example.agents.investor.InvestorPriceRecordLabel;
 import org.example.agents.stockexchange.StockExchangeAgent;
 import org.example.datamodels.EnvRecordQueueCreator;
+import org.example.datamodels.StockSymbol;
 import org.example.logic.stockexchange.utils.EnvRecord;
 
 import java.util.*;
@@ -37,7 +40,10 @@ public class Main {
 //            rec.add(new EnvRecord("AAPL",1.0,10000L));
             HashMap<String,Queue<EnvRecord>> baseline = new HashMap<>();
             baseline.put("AAPL",rec);
-            Object[] agentArgs = {"GPW",baseline}; // Argumenty przekazywane do agenta
+
+            List<StockSymbol> supportedStocks = new ArrayList<>();
+            supportedStocks.add(new StockSymbol("Apple","AAPL",148.5,10000L));
+            Object[] agentArgs = {"GPW",supportedStocks,baseline}; // Argumenty przekazywane do agenta
             AgentController gpwAgent = mainContainer.createNewAgent(
                     "GPW",                      // Nazwa agenta
                     StockExchangeAgent.class.getName(), // Klasa agenta
@@ -65,6 +71,15 @@ public class Main {
 
             dummyAgent.start();
             System.out.println("DummyAgent started and sending messages!");
+            List<InvestorPriceRecordLabel> observedStocks = new ArrayList<>();
+            observedStocks.add(new InvestorPriceRecordLabel("AAPL","GPW"));
+            AgentController investorAgent = mainContainer.createNewAgent(
+                    "InvestorAgent",
+                    InvestorAgent.class.getName(),
+                    new Object[]{observedStocks}
+            );
+            investorAgent.start();
+            dummyAgent.start();
 
             // Tworzenie agenta Sniffer
             String[] snifferTargets = {"GPW", "Broker1", "DummyAgent"};
