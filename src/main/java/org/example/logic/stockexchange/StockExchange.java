@@ -1,9 +1,13 @@
 package org.example.logic.stockexchange;
 
+import jade.core.AID;
+import org.example.datamodels.order.OrderType;
 import org.example.global.StockDictionary;
 import org.example.global.StockPriceDictionary;
 import org.example.logic.stockexchange.order.PlacableDisposition;
 import org.example.datamodels.StockSymbol;
+import org.example.logic.stockexchange.utils.ArtificialBaseline;
+import org.example.logic.stockexchange.utils.EnvRecord;
 import org.example.logic.stockexchange.utils.ExchangeDate;
 import org.example.logic.stockexchange.order.marketorder.ExchangeOrder;
 import org.example.logic.stockexchange.settlements.TransactionSettlement;
@@ -22,7 +26,7 @@ public class StockExchange {
     private Long millisecondsSinceStart;
     private Long millisecondsPerSession;
     private Long sessionsPerYear;
-
+    private ArtificialBaseline baseline;
 
 
     public StockExchange(String name, ExchangeDate lastSessionClosingDate, Long millisecondsPerSession, Long sessionsPerYear) {
@@ -33,6 +37,11 @@ public class StockExchange {
         this.sessionsPerYear = sessionsPerYear;
         this.millisecondsSinceStart = 0L;
         StockPriceDictionary.addStockMarket(name);
+        this.baseline = new ArtificialBaseline();
+    }
+
+    public ArtificialBaseline getBaseline() {
+        return baseline;
     }
     public StockExchange(String name, Long millisecondsPerSession, Long sessionsPerYear){
         this(name, new ExchangeDate(),millisecondsPerSession,sessionsPerYear);
@@ -58,6 +67,7 @@ public class StockExchange {
         if (!orderSheets.containsKey(symbol)) {
             orderSheets.put(symbol, new OrderSheet(symbol, name));
             StockDictionary.registerStockSymbol(symbol);
+            this.loadArtificialDataForSheet(orderSheets.get(symbol));
         } else {
             throw new IllegalArgumentException("Stock already exists in the exchange.");
         }
@@ -134,6 +144,19 @@ public class StockExchange {
         this.currentSessionStart = currentSessionStart.getNexSessionDate();
         this.millisecondsSinceStart = 0L;
         this.expirationUpdate();
+        this.loadArtificialData();
+    }
+
+    public void loadArtificialData(){
+        for (OrderSheet sheet : orderSheets.values()) {
+            this.loadArtificialDataForSheet(sheet);
+       }
+    }
+
+    public void loadArtificialDataForSheet(OrderSheet sheet){
+        String shortName = sheet.getSymbol().getShortName();
+        EnvRecord rec = this.baseline.getNextEnvRec(shortName);
+        sheet.placeDisposition(new ExchangeOrder(sheet.getSymbol(), OrderType.SELL,currentSessionStart.getNexSessionDate(), rec.price(), rec.quantity(), new OrderSubmitter("Env", new AID("imaginaryBroker",false),"")));
     }
 
     /**

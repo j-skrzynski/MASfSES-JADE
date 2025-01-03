@@ -9,6 +9,11 @@ import jade.wrapper.ControllerException;
 import org.example.agents.DummyAgent;
 import org.example.agents.broker.BrokerAgent;
 import org.example.agents.stockexchange.StockExchangeAgent;
+import org.example.logic.stockexchange.utils.EnvRecord;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class Main {
     public static void main(String[] args) {
@@ -24,12 +29,19 @@ public class Main {
             System.out.println("JADE container started!");
 
             // Tworzenie i uruchamianie agentów
-            Object[] agentArgs = {"GPW"}; // Argumenty przekazywane do agenta
+            Queue<EnvRecord> rec = new LinkedList<EnvRecord>();
+            rec.add(new EnvRecord("AAPL",2.0,10000L));
+            rec.add(new EnvRecord("AAPL",2.0,10000L));
+            rec.add(new EnvRecord("AAPL",1.0,10000L));
+            HashMap<String,Queue<EnvRecord>> baseline = new HashMap<>();
+            baseline.put("AAPL",rec);
+            Object[] agentArgs = {"GPW",baseline}; // Argumenty przekazywane do agenta
             AgentController gpwAgent = mainContainer.createNewAgent(
                     "GPW",                      // Nazwa agenta
                     StockExchangeAgent.class.getName(), // Klasa agenta
                     agentArgs                  // Argumenty agenta
             );
+
 
             Object[] agentArgs2 = {}; // Argumenty przekazywane do agenta
             AgentController brokerAgent = mainContainer.createNewAgent(

@@ -6,7 +6,11 @@ import org.example.agents.stockexchange.behaviours.OrderProcessingBehaviour;
 import org.example.agents.stockexchange.behaviours.SettlementSendingBehaviour;
 import org.example.agents.stockexchange.behaviours.TimeHandlingBehaviour;
 import org.example.logic.stockexchange.StockExchange;
+import org.example.logic.stockexchange.utils.EnvRecord;
 import org.example.logic.stockexchange.utils.ExchangeDate;
+
+import java.util.HashMap;
+import java.util.Queue;
 
 public class StockExchangeAgent extends Agent {
 
@@ -22,6 +26,11 @@ public class StockExchangeAgent extends Agent {
             String exchangeName = (String) args[0];
             stockExchange = new StockExchange(exchangeName, new ExchangeDate(),1*60*1000L,252L);
             System.out.println("StockExchangeAgent started: " + exchangeName);
+            if(args.length > 1) {
+                HashMap<String, Queue<EnvRecord>> queues = (HashMap<String, Queue<EnvRecord>>) args[1];
+                stockExchange.getBaseline().setBaseline(queues);
+                stockExchange.loadArtificialData();
+            }
         } else {
             stockExchange = new StockExchange("Default Exchange", new ExchangeDate(),3*60*1000L,252L);
             System.out.println("StockExchangeAgent started: Default Exchange");

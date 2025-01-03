@@ -47,6 +47,10 @@ public class OrderSheet {
     private PriceTracker priceTracker;
     private StockSymbol symbol;
 
+    public StockSymbol getSymbol() {
+        return symbol;
+    }
+
     private Queue<TransactionSettlement> settlementsToSend;
     private Queue<OrderSubmitter> canceledOrders;
 
