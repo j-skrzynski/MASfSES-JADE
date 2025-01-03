@@ -26,7 +26,7 @@ public class StockExchangeAgent extends Agent {
         Object[] args = getArguments();
         if (args != null && args.length > 0) {
             String exchangeName = (String) args[0];
-            stockExchange = new StockExchange(exchangeName, new ExchangeDate(),1*60*1000L,252L);
+            stockExchange = new StockExchange(exchangeName, new ExchangeDate(),1*20*1000L,252L);
             System.out.println("StockExchangeAgent started: " + exchangeName);
             if (args.length > 1) {
                 Collection<StockSymbol> symbols = (Collection<StockSymbol>) args[1];

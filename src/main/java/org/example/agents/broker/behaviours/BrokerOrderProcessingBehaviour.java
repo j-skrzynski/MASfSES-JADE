@@ -91,7 +91,8 @@ public class BrokerOrderProcessingBehaviour extends CyclicBehaviour {
                         break;
                     case "GET_BALANCE":
                         double balance = agent.getStockBroker().getMoneyBalance(command.getTraderName());
-                        sendReply(msg, "Balance for " + command.getTraderName() + ": " + balance);
+                        //sendReply(msg, "Balance for " + command.getTraderName() + ": " + balance);
+                        sendReply(msg, ""+balance);
                         break;
                     case "GET_PORTFOLIO":
                         String portfolio = agent.getStockBroker().getInvestorPortfolio(command.getTraderName()).toString();

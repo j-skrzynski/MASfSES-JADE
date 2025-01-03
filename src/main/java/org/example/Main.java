@@ -10,6 +10,7 @@ import org.example.agents.DummyAgent;
 import org.example.agents.broker.BrokerAgent;
 import org.example.agents.investor.InvestorAgent;
 import org.example.agents.investor.InvestorPriceRecordLabel;
+import org.example.agents.investor.SimpleSMAInvestorAgent;
 import org.example.agents.stockexchange.StockExchangeAgent;
 import org.example.datamodels.EnvRecordQueueCreator;
 import org.example.datamodels.StockSymbol;
@@ -76,13 +77,21 @@ public class Main {
             AgentController investorAgent = mainContainer.createNewAgent(
                     "InvestorAgent",
                     InvestorAgent.class.getName(),
-                    new Object[]{observedStocks}
+                    new Object[]{observedStocks, 10000.0}
             );
             investorAgent.start();
             dummyAgent.start();
 
+
+            AgentController investorAgent2 = mainContainer.createNewAgent(
+                    "SSMAInvestorAgent",
+                    SimpleSMAInvestorAgent.class.getName(),
+                    new Object[]{observedStocks, 10000.0}
+            );
+            investorAgent2.start();
+
             // Tworzenie agenta Sniffer
-            String[] snifferTargets = {"GPW", "Broker1", "DummyAgent"};
+            String[] snifferTargets = {"GPW", "Broker1", "DummyAgent","InvestorAgent","SSMAInvestorAgent"};
             String snifferTargetArgs = String.join(";", snifferTargets);
 
             AgentController snifferAgent = mainContainer.createNewAgent(

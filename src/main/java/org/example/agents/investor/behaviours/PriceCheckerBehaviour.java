@@ -14,6 +14,7 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public class PriceCheckerBehaviour extends TickerBehaviour {
 
@@ -78,10 +79,12 @@ public class PriceCheckerBehaviour extends TickerBehaviour {
             ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
             request.addReceiver(new AID(stock.stockExchangeName(), AID.ISLOCALNAME));
             request.setContent(createJsonCommand("GET_TOP_BUY", stock.shortName()));
+            String rid = UUID.randomUUID().toString();
+            request.setReplyWith(rid);
             myAgent.send(request);
 
             // Oczekiwanie na odpowiedź
-            ACLMessage reply = myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM), 5000);
+            ACLMessage reply = myAgent.blockingReceive(MessageTemplate.MatchInReplyTo(rid), 5000);
             if (reply != null) {
                 String content = reply.getContent();
                 Double price = extractPriceFromJson(content);
@@ -100,10 +103,12 @@ public class PriceCheckerBehaviour extends TickerBehaviour {
             ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
             request.addReceiver(new AID(stock.stockExchangeName(), AID.ISLOCALNAME));
             request.setContent(createJsonCommand("GET_TOP_SELL", stock.shortName()));
+            String rid = UUID.randomUUID().toString();
+            request.setReplyWith(rid);
             myAgent.send(request);
 
             // Oczekiwanie na odpowiedź
-            ACLMessage reply = myAgent.blockingReceive(MessageTemplate.MatchPerformative(ACLMessage.INFORM), 5000);
+            ACLMessage reply = myAgent.blockingReceive(MessageTemplate.MatchInReplyTo(rid), 5000);
             if (reply != null) {
                 String content = reply.getContent();
                 Double price = extractPriceFromJson(content);
