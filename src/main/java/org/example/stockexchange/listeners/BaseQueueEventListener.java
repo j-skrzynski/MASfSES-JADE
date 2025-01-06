@@ -20,7 +20,9 @@ public abstract class BaseQueueEventListener<E> implements QueueEventListener<E>
     @Override
     public void onRemove(E element) {
         AgentWindow window = getAgentWindow(element);
-        handleRemoveEvent(window, element);
+        if (window != null) {
+            handleRemoveEvent(window, element);
+        }
     }
 
     protected abstract void handleAddEvent(AgentWindow agentWindow, E element);
@@ -33,6 +35,9 @@ public abstract class BaseQueueEventListener<E> implements QueueEventListener<E>
      * @return AgentWindow
      */
     private AgentWindow getAgentWindow(Object model) {
-        return _agentWindowManager.get_agentWindows().getFirst();
+        return _agentWindowManager.getAgentWindows()
+                .stream().
+                findFirst().
+                orElse(null);
     }
 }

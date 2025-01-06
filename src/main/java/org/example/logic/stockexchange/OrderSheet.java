@@ -46,6 +46,7 @@ public class OrderSheet {
     private final ListenableQueue<AwaitingExchangeOrder> awaitingActivationBuy;
     private final ListenableQueue<AwaitingExchangeOrder> awaitingActivationSell;
     private final ListenableQueue<TransactionSettlement> settlementsToSend;
+    private final ListenableQueue<OrderSubmitter> canceledOrders;
 
     private final PriceTracker priceTracker;
     private final StockSymbol symbol;
@@ -76,10 +77,17 @@ public class OrderSheet {
         settlementsToSend = new ListenableQueue<>(new LinkedList<TransactionSettlement>())
                 .addListener(new SentSettlementsListener(agentWindowManager));
 
+        canceledOrders = new ListenableQueue<>(new LinkedList<OrderSubmitter>())
+                .addListener(new CancelledOrdersListener(agentWindowManager));
+
         priceTracker = new PriceTracker(symbol,exchangeName);
         this.symbol = symbol;
 
         lastId = ExchangeOrderingID.getZero();
+    }
+
+    public StockSymbol getSymbol() {
+        return symbol;
     }
 
     private void saveTransaction(BuyerSettlement buyerSettlement, SellerSettlement sellerSettlement) {
@@ -257,12 +265,69 @@ public class OrderSheet {
     }
 
     private void expire(ExchangeDate date){
-        buyOrders.removeIf(order -> order.isExpired(date));
-        sellOrders.removeIf(order -> order.isExpired(date));
-        noLimitBuy.removeIf(order -> order.isExpired(date));
-        noLimitSell.removeIf(order -> order.isExpired(date));
-        awaitingActivationBuy.removeIf(awaitingExchangeOrder -> awaitingExchangeOrder.getActivatedOrder().isExpired(date));
-        awaitingActivationSell.removeIf(awaitingExchangeOrder -> awaitingExchangeOrder.getActivatedOrder().isExpired(date));
+//        buyOrders.removeIf(order -> order.isExpired(date));
+//        sellOrders.removeIf(order -> order.isExpired(date));
+//        noLimitBuy.removeIf(order -> order.isExpired(date));
+//        noLimitSell.removeIf(order -> order.isExpired(date));
+//        awaitingActivationBuy.removeIf(awaitingExchangeOrder -> awaitingExchangeOrder.getActivatedOrder().isExpired(date));
+//        awaitingActivationSell.removeIf(awaitingExchangeOrder -> awaitingExchangeOrder.getActivatedOrder().isExpired(date));
+
+        // Obsługa buyOrders
+        buyOrders.removeIf(order -> {
+            if (order.isExpired(date)) {
+                canceledOrders.add(order.getSubmitter());
+                return true; // Usunięcie
+            }
+            return false; // Pozostawienie w liście
+        });
+
+        // Obsługa sellOrders
+        sellOrders.removeIf(order -> {
+            if (order.isExpired(date)) {
+                canceledOrders.add(order.getSubmitter());
+                return true; // Usunięcie
+            }
+            return false; // Pozostawienie w liście
+        });
+
+        // Obsługa noLimitBuy
+        noLimitBuy.removeIf(order -> {
+            if (order.isExpired(date)) {
+                canceledOrders.add(order.getSubmitter());
+                return true; // Usunięcie
+            }
+            return false; // Pozostawienie w liście
+        });
+
+        // Obsługa noLimitSell
+        noLimitSell.removeIf(order -> {
+            if (order.isExpired(date)) {
+                canceledOrders.add(order.getSubmitter());
+                return true; // Usunięcie
+            }
+            return false; // Pozostawienie w liście
+        });
+
+        // Obsługa awaitingActivationBuy
+        awaitingActivationBuy.removeIf(awaitingExchangeOrder -> {
+            var activatedOrder = awaitingExchangeOrder.getActivatedOrder();
+            if (activatedOrder.isExpired(date)) {
+                canceledOrders.add(awaitingExchangeOrder.getActivatedOrder().getSubmitter());
+                return true; // Usunięcie
+            }
+            return false; // Pozostawienie w liście
+        });
+
+        // Obsługa awaitingActivationSell
+        awaitingActivationSell.removeIf(awaitingExchangeOrder -> {
+            var activatedOrder = awaitingExchangeOrder.getActivatedOrder();
+            if (activatedOrder.isExpired(date)) {
+                canceledOrders.add(awaitingExchangeOrder.getActivatedOrder().getSubmitter());
+                return true; // Usunięcie
+            }
+            return false; // Pozostawienie w liście
+        });
+
     }
 
     public void placeDisposition(PlacableDisposition disposition){
@@ -316,5 +381,9 @@ public class OrderSheet {
             if (++count >= n) break; // Limit to 'n' orders
         }
         return topOrders;
+    }
+
+    public OrderSubmitter popNextCancelation() {
+        return canceledOrders.poll();
     }
 }

@@ -61,7 +61,22 @@ Trader4/1#PLACE_ORDER;LIMIT;BUY;WDA;XD;300;102
   "brokerOrderId": ""
 }
 
-
+{
+  "command": "GET_TOP_BUY",
+  "arguments": ["AAPL"],
+  "traderName": "",
+  "brokerName": "",
+  "exchangeName": "",
+  "brokerOrderId": ""
+}
+{
+  "command": "GET_TOP_SELL",
+  "arguments": ["AAPL"],
+  "traderName": "",
+  "brokerName": "",
+  "exchangeName": "",
+  "brokerOrderId": ""
+}
 {
   "command": "PLACE_ORDER",
   "arguments": [{
@@ -171,3 +186,112 @@ Trader4/1#PLACE_ORDER;LIMIT;BUY;WDA;XD;300;102
 
 
 ```
+
+
+
+```
+komendy brokera
+
+{
+    "command": "REGISTER",
+    "exchangeName": "",
+    "traderName": "Trader1",
+    "brokerOrderId": "",
+    "arguments": []
+}
+
+
+{
+    "command": "DEPOSIT",
+    "exchangeName": "",
+    "traderName": "Trader1",
+    "brokerOrderId": "",
+    "arguments": [5000]
+}
+
+{
+    "command": "GET_BALANCE",
+    "exchangeName": "",
+    "traderName": "Trader1",
+    "brokerOrderId": "",
+    "arguments": []
+}
+
+{
+    "command": "WITHDRAW",
+    "exchangeName": "",
+    "traderName": "Trader1",
+    "brokerOrderId": "",
+    "arguments": [1000]
+}
+
+{
+    "command": "PLACE_ORDER",
+    "exchangeName": "GPW",
+    "traderName": "Trader1",
+    "brokerOrderId": "",
+    "arguments": [
+        {
+            "order": {
+              "symbol": {"shortName": "AAPL"},
+              "orderType": "BUY",
+              "price": 150.0,
+              "quantity": 1000,
+              "hasLimit": true,
+              "expirationSecpification": "D"
+            },
+            "awaiting": false,
+            "price": 0.0
+        }
+    ]
+}
+
+
+
+
+
+
+{
+    "command": "PLACE_ORDER",
+    "exchangeName": "GPW",
+    "traderName": "Trader1",
+    "brokerOrderId": "",
+    "arguments": [
+        {
+            "order": {
+              "symbol": {"shortName": "AAPL"},
+              "orderType": "BUY",
+              "price": 5.0,
+              "quantity": 1000,
+              "hasLimit": true,
+              "expirationSecpification": "D"
+            },
+            "awaiting": false,
+            "price": 0.0
+        }
+    ]
+}
+
+
+```
+
+
+
+{
+"command": "PLACE_ORDER",
+"arguments": [{
+"order": {
+"symbol": {"shortName": "AAPL"},
+"orderType": "SELL",
+"price": 5.0,
+"quantity": 500,
+"expirationSecpification": "D"
+},
+"awaiting": false,
+"price": 0.0
+}],
+"traderName": "JohnDoe",
+"brokerName": "XYZBroker",
+"exchangeName": "GPW",
+"brokerOrderId": ""
+}

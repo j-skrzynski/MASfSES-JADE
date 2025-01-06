@@ -1,6 +1,7 @@
 package org.example.logic.stockexchange.utils;
 
 import org.example.datamodels.StockSymbol;
+import org.example.global.StockPriceDictionary;
 import org.glassfish.pfl.basic.contain.Pair;
 
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ public class PriceTracker {
         history.add(new Pair<>(price,quantity));
         lastPrice = price;
         logTransaction(price,quantity,buyer.getLogName(),seller.getLogName());
+        StockPriceDictionary.addPrice(symbol.getShortName(), exchangeName,price);
     }
     public Double getLastPrice(){
         return lastPrice;

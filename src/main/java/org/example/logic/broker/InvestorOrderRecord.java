@@ -1,6 +1,7 @@
 package org.example.logic.broker;
 
 import org.example.datamodels.StockSymbol;
+import org.example.datamodels.order.OrderType;
 import org.example.global.StockDictionary;
 
 public class InvestorOrderRecord {
@@ -16,7 +17,7 @@ public class InvestorOrderRecord {
     private Double moneyLocked;
     private boolean limit;
 
-    public InvestorOrderRecord(String orderId, StockSymbol symbol, Long amountOfStockToBeBought, Long amountOfStockToBeSold, Double moneyLocked, boolean limit, OrderAction action) {
+    public InvestorOrderRecord(String orderId, StockSymbol symbol, Long amountOfStockToBeBought, Long amountOfStockToBeSold, Double moneyLocked, boolean limit, OrderType action) {
         this.orderId = orderId;
         this.symbol = symbol;
         this.amountOfStockToBeBought = amountOfStockToBeBought;
@@ -29,7 +30,7 @@ public class InvestorOrderRecord {
     public InvestorOrderRecord(InvestorRequest investorRequest, String orderId, Double moneyToLock) {
         this.orderId = orderId;
         this.symbol = StockDictionary.getStockIdByShortName(investorRequest.getShortName());
-        if(investorRequest.getAction() == OrderAction.BUY) {
+        if(investorRequest.getAction() == OrderType.BUY) {
             this.amountOfStockToBeBought = investorRequest.getAmount();
             this.amountOfStockToBeSold = 0L;
         }
@@ -62,11 +63,11 @@ public class InvestorOrderRecord {
         return limit;
     }
 
-    public OrderAction getAction() {
+    public OrderType getAction() {
         return action;
     }
 
-    private OrderAction action;
+    private OrderType action;
 
     public void payedMoney(Double money){
         this.moneyLocked -= money;

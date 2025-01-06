@@ -34,7 +34,7 @@ public class AgentWindowManager {
         _agentWindows.add(window);
     }
 
-    public List<AgentWindow> get_agentWindows() {
+    public List<AgentWindow> getAgentWindows() {
         return _agentWindows;
     }
 }

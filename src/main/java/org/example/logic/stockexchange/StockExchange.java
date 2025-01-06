@@ -1,11 +1,18 @@
 package org.example.logic.stockexchange;
 
 import org.example.visualization.AgentWindowManager;
+import jade.core.AID;
+import org.example.datamodels.order.OrderType;
+import org.example.global.StockDictionary;
+import org.example.global.StockPriceDictionary;
 import org.example.logic.stockexchange.order.PlacableDisposition;
 import org.example.datamodels.StockSymbol;
+import org.example.logic.stockexchange.utils.ArtificialBaseline;
+import org.example.logic.stockexchange.utils.EnvRecord;
 import org.example.logic.stockexchange.utils.ExchangeDate;
 import org.example.logic.stockexchange.order.marketorder.ExchangeOrder;
 import org.example.logic.stockexchange.settlements.TransactionSettlement;
+import org.example.logic.stockexchange.utils.OrderSubmitter;
 
 import java.util.HashMap;
 import java.util.List;
@@ -13,15 +20,14 @@ import java.util.Map;
 import java.util.Set;
 
 public class StockExchange {
-
     private final String name;
     private final Map<StockSymbol, OrderSheet> orderSheets;
+    private final Long millisecondsPerSession;
+    private final Long sessionsPerYear;
+    private final ArtificialBaseline baseline;
+
     private ExchangeDate currentSessionStart;
     private Long millisecondsSinceStart;
-    private Long millisecondsPerSession;
-    private Long sessionsPerYear;
-
-
 
     public StockExchange(String name, ExchangeDate lastSessionClosingDate, Long millisecondsPerSession, Long sessionsPerYear) {
         this.name = name;
@@ -29,6 +35,13 @@ public class StockExchange {
         this.currentSessionStart = lastSessionClosingDate;
         this.millisecondsPerSession = millisecondsPerSession;
         this.sessionsPerYear = sessionsPerYear;
+        this.millisecondsSinceStart = 0L;
+        StockPriceDictionary.addStockMarket(name);
+        this.baseline = new ArtificialBaseline();
+    }
+
+    public ArtificialBaseline getBaseline() {
+        return baseline;
     }
     public StockExchange(String name, Long millisecondsPerSession, Long sessionsPerYear){
         this(name, new ExchangeDate(),millisecondsPerSession,sessionsPerYear);
@@ -53,6 +66,8 @@ public class StockExchange {
     public void addStock(StockSymbol symbol) {
         if (!orderSheets.containsKey(symbol)) {
             orderSheets.put(symbol, new OrderSheet(symbol, name, AgentWindowManager.getTestInstance()));
+            StockDictionary.registerStockSymbol(symbol);
+            this.loadArtificialDataForSheet(orderSheets.get(symbol));
         } else {
             throw new IllegalArgumentException("Stock already exists in the exchange.");
         }
@@ -92,6 +107,17 @@ public class StockExchange {
     }
 
     /**
+     * Fetches and removes the next available transaction cancelation for a specific stock.
+     */
+    public OrderSubmitter popNextCancelationnotification(StockSymbol symbol) {
+        OrderSheet orderSheet = orderSheets.get(symbol);
+        if (orderSheet != null) {
+            return orderSheet.popNextCancelation();
+        }
+        return null;
+    }
+
+    /**
      * Performs expiration updates for all order sheets in the exchange.
      */
     public void expirationUpdate() {
@@ -118,6 +144,21 @@ public class StockExchange {
         this.currentSessionStart = currentSessionStart.getNexSessionDate();
         this.millisecondsSinceStart = 0L;
         this.expirationUpdate();
+        this.loadArtificialData();
+    }
+
+    public void loadArtificialData(){
+        for (OrderSheet sheet : orderSheets.values()) {
+            this.loadArtificialDataForSheet(sheet);
+       }
+    }
+
+    public void loadArtificialDataForSheet(OrderSheet sheet){
+        String shortName = sheet.getSymbol().getShortName();
+        EnvRecord rec = this.baseline.getNextEnvRec(shortName);
+        if(rec != null) {
+            sheet.placeDisposition(new ExchangeOrder(sheet.getSymbol(), OrderType.SELL, currentSessionStart.getNexSessionDate(), rec.price(), rec.quantity(), new OrderSubmitter("Env", new AID("imaginaryBroker", false), "")));
+        }
     }
 
     /**
@@ -148,7 +189,7 @@ public class StockExchange {
     }
 
     public void addMillisecondsSinceStart(Long millisecondsSinceStart) {
-        this.millisecondsSinceStart = millisecondsSinceStart;
+        this.millisecondsSinceStart += millisecondsSinceStart;
     }
 
     public Long getMillisecondsSinceStart() {

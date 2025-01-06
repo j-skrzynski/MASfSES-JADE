@@ -4,6 +4,7 @@ package org.example.logic.broker;
 import org.example.datamodels.StockSymbol;
 import org.example.datamodels.TransactionResult;
 import org.example.datamodels.WalletRecord;
+import org.example.datamodels.order.OrderType;
 import org.example.global.StockPriceDictionary;
 
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ public class InvestorAccount {
     }
 
     private Double calculateRequiredMoney(InvestorRequest req){
-        if(req.getAction() == OrderAction.BUY){
+        if(req.getAction() == OrderType.BUY){
             if(req.isLimitless()){
                 Double lastUnitPriceOfStock = StockPriceDictionary.getPrice(req.getShortName(), req.getStockExchangeName());
                 return lastUnitPriceOfStock*req.getAmount()*1.15;
@@ -48,7 +49,7 @@ public class InvestorAccount {
         //iff greater than 0
         if(amount > 0) {
             if (stocks.containsKey(stockId.getShortName())) {
-                stocks.get(stockId).add(amount);
+                stocks.get(stockId.getShortName()).add(amount);
             } else {
                 stocks.put(stockId.getShortName(), new WalletRecord(stockId, amount));
             }
@@ -57,12 +58,12 @@ public class InvestorAccount {
 
 
 
-    public void placeOrder(InvestorRequest req/* tutaj coś co bardziej jest życzeniem*/){
+    public String placeOrder(InvestorRequest req/* tutaj coś co bardziej jest życzeniem*/){
         String orderId = UUID.randomUUID().toString();
 
 
         StockSymbol stock = getStockIdByShortName(req.getShortName());
-        Long requestedStockAmount = req.getAmount();
+        Long requestedStockAmount =  req.getAction() == OrderType.SELL ? req.getAmount() : 0;
         Long currentStockAmount = getCurrentStockBalance(stock.getShortName());
         Double requiredMoney = calculateRequiredMoney(req); //if no limit then calculate another way
         Double currentMoney = this.balance;
@@ -83,7 +84,7 @@ public class InvestorAccount {
         this.balance-=requiredMoney;
 
         currentOrders.put(orderId, rec);
-
+        return orderId;
     }
 
     public void processTransactionResult(TransactionResult tr){
@@ -128,4 +129,16 @@ public class InvestorAccount {
     public Double getBalance() {
         return Double.valueOf(balance);
     }
+
+    public void addStockToAccount(StockSymbol stockId, Long amount){
+        if(amount < 0){
+            throw new RuntimeException("Stock amount is less than zero");
+        }
+        if (stocks.containsKey(stockId.getShortName())) {
+            stocks.get(stockId).add(amount);
+        } else {
+            stocks.put(stockId.getShortName(), new WalletRecord(stockId, amount));
+        }
+    }
+
 }

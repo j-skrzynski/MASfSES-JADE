@@ -17,6 +17,12 @@ public class OrderParser {
         try {
             JsonObject orderJson = argumentsJson.getAsJsonObject("order");
             Order order = parseOrder(orderJson);
+            if (order.getPrice() == null || order.getPrice().compareTo(0.0) == 0){
+                order.setHasLimit(false);
+            }
+            else{
+                order.setHasLimit(true);
+            }
 
             boolean awaiting = argumentsJson.get("awaiting").getAsBoolean();
             Double price = argumentsJson.get("price").getAsDouble();

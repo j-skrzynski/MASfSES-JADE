@@ -1,5 +1,7 @@
 package org.example.agents.stockexchange.behaviours;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -27,13 +29,13 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
     public OrderProcessingBehaviour(StockExchangeAgent agent) {
         super(agent);
         this.agent = agent;
-        this.gson = new Gson(); // JSON parser
+        this.gson = new Gson();
     }
 
     @Override
     public void action() {
         ACLMessage msg = agent.receive();
-        if (msg != null) {
+        if (msg != null && msg.getPerformative() != ACLMessage.FAILURE) {
             String content = msg.getContent();
             ACLMessage reply = msg.createReply();
 
@@ -41,6 +43,7 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
                 AID sender = msg.getSender();
                 String response = handleRequest(content, sender);
                 reply.setPerformative(ACLMessage.INFORM);
+                reply.setOntology("Broker-StockExchange");
                 reply.setContent(response);
             } catch (Exception e) {
                 reply.setPerformative(ACLMessage.FAILURE);
@@ -54,15 +57,14 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
     }
 
     private String handleRequest(String content, AID sender) throws Exception {
-        // Parsowanie JSON-a
         CommandParser cp = new CommandParser();
         Command command = cp.parseCommand(content);
 
         String cmd = command.getCommand();
         List<Object> arguments = command.getArguments();
-        String traderName = command.getTraderName();  // Nowe pole
-        String brokerName = command.getBrokerName();  // Nowe pole
-        String brokerOrderId = command.getBrokerOrderId();  // Nowe pole
+        String traderName = command.getTraderName();
+        String brokerName = command.getBrokerName();
+        String brokerOrderId = command.getBrokerOrderId();
 
         switch (cmd) {
             case "ADD_STOCK":
@@ -134,7 +136,15 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
         }
 
         agent.getStockExchange().placeOrder(symbol, disposition);
-        return "OK";
+
+        JsonObject commandObject = new JsonObject();
+        commandObject.addProperty("command", "INFORM");
+        commandObject.addProperty("exchangeName", agent.getStockExchange().getName());
+        commandObject.addProperty("traderName", traderName);
+        commandObject.addProperty("brokerOrderId", brokerName);
+        commandObject.add("arguments", new JsonArray());
+        Gson gson = new Gson();
+        return gson.toJson(commandObject);
     }
 
     private String advanceSession() {
@@ -149,7 +159,8 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
         String shortName = (String) arguments.get(0);
         StockSymbol stockSymbol = agent.getStockExchange().getSymbolByShortName(shortName);
         List<ExchangeOrder> orders = agent.getStockExchange().getTopBuyOffers(stockSymbol);
-        return "Top Buy Offers: " + orders.toString();
+        Gson gson = new Gson();
+        return gson.toJson(orders);
     }
 
     private String getTopSell(List<Object> arguments) {
@@ -159,7 +170,8 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
         String shortName = (String) arguments.get(0);
         StockSymbol stockSymbol = agent.getStockExchange().getSymbolByShortName(shortName);
         List<ExchangeOrder> orders = agent.getStockExchange().getTopSellOffers(stockSymbol);
-        return "Top Sell Offers: " + orders.toString();
+        Gson gson = new Gson();
+        return gson.toJson(orders);
     }
 
     private ExchangeDate processExpirationSpecification(String expiration) {

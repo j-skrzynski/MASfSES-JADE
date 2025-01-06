@@ -27,4 +27,8 @@ public class WalletRecord {
     public void sub(Long amount) {
         this.amount -= amount;
     }
+
+    public String toString() {
+        return "WalletRecord{" + "stock=" + stock + ", amount=" + amount + '}';
+    }
 }
