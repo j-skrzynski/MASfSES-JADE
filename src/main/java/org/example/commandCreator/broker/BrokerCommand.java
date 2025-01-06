@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class BrokerCommand {
-    private final Gson gson = new Gson();
+
     protected List<Object> arguments;
     private String command = "";
     private String exchangeName = "";
@@ -57,6 +57,7 @@ public abstract class BrokerCommand {
     }
 
     public String getJsonCommand() {
+        Gson gson = new Gson();
         return gson.toJson(this);
     }
 }
