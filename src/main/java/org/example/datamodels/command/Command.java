@@ -11,8 +11,30 @@ public class Command {
     private final String exchangeName;
     private String brokerOrderId;
 
+    public Command(
+            String command,
+            String stockExchangeName,
+            List<Object> arguments,
+            String traderName,
+            String brokerName,
+            String exchangeName,
+            String brokerOrderId
+    ) {
+        this.command = command;
+        this.stockExchangeName = stockExchangeName;
+        this.arguments = arguments;
+        this.traderName = traderName;
+        this.brokerName = brokerName;
+        this.exchangeName = exchangeName;
+        this.brokerOrderId = brokerOrderId;
+    }
+
     public String getBrokerOrderId() {
         return brokerOrderId;
+    }
+
+    public void setBrokerOrderId(String brokerOrderId) {
+        this.brokerOrderId = brokerOrderId;
     }
 
     public String getCommand() {
@@ -37,19 +59,5 @@ public class Command {
 
     public String getExchangeName() {
         return exchangeName;
-    }
-
-    public void setBrokerOrderId(String brokerOrderId) {
-        this.brokerOrderId = brokerOrderId;
-    }
-
-    public Command(String command, String stockExchangeName, List<Object> arguments, String traderName, String brokerName, String exchangeName, String brokerOrderId) {
-        this.command = command;
-        this.stockExchangeName = stockExchangeName;
-        this.arguments = arguments;
-        this.traderName = traderName;
-        this.brokerName = brokerName;
-        this.exchangeName = exchangeName;
-        this.brokerOrderId = brokerOrderId;
     }
 }

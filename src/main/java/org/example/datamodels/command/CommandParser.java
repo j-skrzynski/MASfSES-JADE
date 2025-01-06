@@ -13,11 +13,7 @@ import java.util.List;
 
 public class CommandParser {
 
-    private final Gson gson;
-
-    public CommandParser() {
-        this.gson = new Gson();
-    }
+    private final Gson gson = new Gson();
 
     // Parsowanie całej komendy
     public Command parseCommand(String json) throws IllegalArgumentException {
@@ -31,7 +27,15 @@ public class CommandParser {
             String brokerOrderId = root.get("brokerOrderId").getAsString();
 
             List<Object> argumentsList = parseArguments(arguments);
-            return new Command(command,stockExchangeName,argumentsList,traderName,brokerName,stockExchangeName,brokerOrderId);
+            return new Command(
+                    command,
+                    stockExchangeName,
+                    argumentsList,
+                    traderName,
+                    brokerName,
+                    stockExchangeName,
+                    brokerOrderId
+            );
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid JSON command: " + e.getMessage(), e);
         }
@@ -101,9 +105,15 @@ public class CommandParser {
         String shortName = jsonObject.get("shortName").getAsString();
         String brokerOrderId = jsonObject.get("brokerOrderId").getAsString();
 
-        return new TransactionResult(toPay, toWithdraw, soldStock, boughtStock, shortName, brokerOrderId);
+        return new TransactionResult(
+                toPay,
+                toWithdraw,
+                soldStock,
+                boughtStock,
+                shortName,
+                brokerOrderId
+        );
     }
-
 
 
 }

@@ -1,12 +1,11 @@
 package org.example.logic.stockexchange.utils;
 
 public class ExpirationDateCalculator {
-    public static ExchangeDate getWDADate(ExchangeDate currentSessionStart, Long sessionsTillEnd){
+    public static ExchangeDate getWDADate(ExchangeDate currentSessionStart, Long sessionsTillEnd) {
         ExchangeDate result = new ExchangeDate(currentSessionStart.getSessionId());
         result.addSessions(sessionsTillEnd);
         return result;
     }
-
 
     /**
      * Oblicza datę dla zleceń typu D (na dzień bieżący).
@@ -18,9 +17,13 @@ public class ExpirationDateCalculator {
     /**
      * Oblicza datę dla zleceń typu WDD (ważne do określonej liczby sesji).
      */
-    public static ExchangeDate getWDDDate(ExchangeDate currentSessionStart, long sessionsCount, long sessionsTillYearEnd) {
+    public static ExchangeDate getWDDDate(
+            ExchangeDate currentSessionStart,
+            long sessionsCount,
+            long sessionsTillYearEnd
+    ) {
         ExchangeDate result = new ExchangeDate(currentSessionStart.getSessionId());
-        result.addSessions(Math.min(sessionsCount,sessionsTillYearEnd));
+        result.addSessions(Math.min(sessionsCount, sessionsTillYearEnd));
         return result;
     }
 
@@ -36,10 +39,14 @@ public class ExpirationDateCalculator {
     /**
      * Oblicza datę dla zleceń typu WDC (ważne do określonej liczby sesji i sekund w ostatniej sesji).
      */
-    public static ExchangeDate getWDCDate(ExchangeDate currentSessionStart, long sessionsCount, long millisecondsInLastSession) {
+    public static ExchangeDate getWDCDate(
+            ExchangeDate currentSessionStart,
+            long sessionsCount,
+            long millisecondsInLastSession
+    ) {
         ExchangeDate result = new ExchangeDate(currentSessionStart.getSessionId(), currentSessionStart.getMilliseconds());
         result.addSessions(sessionsCount);
-        result.addMilisecondsSeconds(millisecondsInLastSession);
+        result.addMillisecondsSeconds(millisecondsInLastSession);
         return result;
     }
 

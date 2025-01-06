@@ -2,9 +2,9 @@ package org.example.agents;
 
 import jade.core.AID;
 import jade.core.Agent;
-import jade.lang.acl.ACLMessage;
 import jade.core.behaviours.SequentialBehaviour;
 import jade.core.behaviours.WakerBehaviour;
+import jade.lang.acl.ACLMessage;
 import org.example.commandCreator.broker.BrokerCommandFactory;
 import org.example.datamodels.order.OrderType;
 
@@ -82,7 +82,12 @@ public class DummyAgent extends Agent {
         behaviour.addSubBehaviour(new WakerBehaviour(this, 5000) { // Opóźnienie 5000 ms
             @Override
             protected void onWake() {
-                sendMessageToBroker(brokerAgent, bcf.marketOrder("AAPL", OrderType.BUY, 5.0, 1000L).expD().getJsonCommand());
+                sendMessageToBroker(brokerAgent, bcf.marketOrder(
+                        "AAPL",
+                        OrderType.BUY,
+                        5.0,
+                        1000L
+                ).expD().getJsonCommand());
             }
         });
 

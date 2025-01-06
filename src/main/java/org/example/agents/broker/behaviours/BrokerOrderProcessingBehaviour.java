@@ -15,18 +15,16 @@ import org.example.logic.broker.InvestorRequest;
 public class BrokerOrderProcessingBehaviour extends CyclicBehaviour {
 
     private final BrokerAgent agent;
-    private final CommandParser commandParser;
-    private final Gson gson;
+    private final CommandParser commandParser = new CommandParser();
+    private final Gson gson = new Gson();
 
     public BrokerOrderProcessingBehaviour(BrokerAgent agent) {
         super(agent);
         this.agent = agent;
-        this.commandParser = new CommandParser();
-        this.gson = new Gson();
     }
 
     private void sendReply(ACLMessage msg, String content) {
-        sendReply(msg,content,ACLMessage.INFORM);
+        sendReply(msg, content, ACLMessage.INFORM);
     }
 
     private void sendReply(ACLMessage msg, String content, int type) {
@@ -39,7 +37,7 @@ public class BrokerOrderProcessingBehaviour extends CyclicBehaviour {
     @Override
     public void action() {
         ACLMessage msg = agent.receive();
-        if (msg != null && msg.getPerformative() != ACLMessage.FAILURE){
+        if (msg != null && msg.getPerformative() != ACLMessage.FAILURE) {
             try {
                 String jsonContent = msg.getContent();
 
@@ -52,35 +50,35 @@ public class BrokerOrderProcessingBehaviour extends CyclicBehaviour {
                         sendReply(msg, "Trader " + command.getTraderName() + " registered successfully.");
                         break;
                     case "ADD_MARKET":
-                        String marketName = (String) command.getArguments().get(0);
+                        String marketName = (String) command.getArguments().getFirst();
                         agent.getStockBroker().addStockExchange(marketName);
                         sendReply(msg, "Added");
                         break;
                     case "DEPOSIT":
-                        double depositAmount = (double) command.getArguments().get(0);
+                        double depositAmount = (double) command.getArguments().getFirst();
                         agent.getStockBroker().deposit(command.getTraderName(), depositAmount);
                         sendReply(msg, "Deposited " + depositAmount + " to " + command.getTraderName() + ".");
                         break;
                     case "WITHDRAW":
-                        double withdrawAmount = (double) command.getArguments().get(0);
+                        double withdrawAmount = (double) command.getArguments().getFirst();
                         agent.getStockBroker().withdraw(command.getTraderName(), withdrawAmount);
                         sendReply(msg, "Withdrew " + withdrawAmount + " from " + command.getTraderName() + ".");
                         break;
                     case "PLACE_ORDER":
-                        Object orderSpec = command.getArguments().get(0);
-                        if(!(orderSpec instanceof AwaitingOrder)) {
+                        Object orderSpec = command.getArguments().getFirst();
+                        if (!(orderSpec instanceof AwaitingOrder)) {
                             throw new IllegalArgumentException("PLACE_ORDER requires an AwaitingOrder");
                         }
-                        InvestorRequest req = new InvestorRequest((AwaitingOrder)orderSpec, command.getStockExchangeName());
+                        InvestorRequest req = new InvestorRequest((AwaitingOrder) orderSpec, command.getStockExchangeName());
                         String newOrderId = agent.getStockBroker().placeOrder(command.getTraderName(), req);
                         command.setBrokerOrderId(newOrderId);
-                        AID exchangeAddress = agent.getStockBroker().getExchangeAdressee(command.getExchangeName());
+                        AID exchangeAddress = agent.getStockBroker().getExchangeAddressee(command.getExchangeName());
 
                         ACLMessage forwardMsg = new ACLMessage(ACLMessage.REQUEST);
                         forwardMsg.addReceiver(exchangeAddress);
                         forwardMsg.setContent(gson.toJson(command));
                         agent.send(forwardMsg);
-                        
+
                         //wyśli zjsonowany command na adres giełdy
                         sendReply(msg, "Order placed successfully for " + command.getTraderName() + ".");
                         break;
@@ -92,14 +90,14 @@ public class BrokerOrderProcessingBehaviour extends CyclicBehaviour {
                     case "GET_BALANCE":
                         double balance = agent.getStockBroker().getMoneyBalance(command.getTraderName());
                         //sendReply(msg, "Balance for " + command.getTraderName() + ": " + balance);
-                        sendReply(msg, ""+balance);
+                        sendReply(msg, "" + balance);
                         break;
                     case "GET_PORTFOLIO":
                         String portfolio = agent.getStockBroker().getInvestorPortfolio(command.getTraderName()).toString();
                         sendReply(msg, "Portfolio for " + command.getTraderName() + ": " + portfolio);
                         break;
                     case "SETTLEMENT":
-                        Object settlementDetails = command.getArguments().get(0);
+                        Object settlementDetails = command.getArguments().getFirst();
                         if (settlementDetails instanceof String) {
                             TransactionResult transactionResult = gson.fromJson((String) settlementDetails, TransactionResult.class);
                             agent.getStockBroker().notifyOnSettlement(command.getTraderName(), transactionResult);
