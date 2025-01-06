@@ -1,15 +1,16 @@
 package org.example.agents.investor;
 
-import jade.core.AID;
 import jade.core.behaviours.TickerBehaviour;
 import org.example.datamodels.order.OrderType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class SimpleSMAInvestorAgent extends InvestorAgent {
 
     // Przechowywanie historii cen, aby ocenić trendy
-    private HashMap<InvestorPriceRecordLabel, List<Double>> priceHistory;
+    private final HashMap<InvestorPriceRecordLabel, List<Double>> priceHistory;
 
     public SimpleSMAInvestorAgent() {
         super();
@@ -43,7 +44,7 @@ public class SimpleSMAInvestorAgent extends InvestorAgent {
             if (priceHistory.get(stock).size() > 5) {
                 List<Double> history = priceHistory.get(stock);
                 Double averagePrice = history.stream().mapToDouble(d -> d).average().orElse(0.0);
-                Double lastTrend = lastPrice - averagePrice;
+                double lastTrend = lastPrice - averagePrice;
 
                 Double brokerBalance = getBalance("Broker1");
 

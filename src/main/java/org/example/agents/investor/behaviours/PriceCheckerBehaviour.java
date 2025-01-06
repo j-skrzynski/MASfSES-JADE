@@ -18,10 +18,11 @@ import java.util.UUID;
 
 public class PriceCheckerBehaviour extends TickerBehaviour {
 
-    private InvestorAgent agent;
+    private final Gson gson = new Gson();
+    private final InvestorAgent agent;
 
-    public PriceCheckerBehaviour(InvestorAgent agent,Long period) {
-        super(agent,period);
+    public PriceCheckerBehaviour(InvestorAgent agent, Long period) {
+        super(agent, period);
         this.agent = agent;
     }
 
@@ -31,17 +32,18 @@ public class PriceCheckerBehaviour extends TickerBehaviour {
     }
 
 
-    private void updatePrices(){
-        Set< InvestorPriceRecordLabel > stocks = agent.getObservedStocks();
+    private void updatePrices() {
+        Set<InvestorPriceRecordLabel> stocks = agent.getObservedStocks();
         for (InvestorPriceRecordLabel stock : stocks) {
             updateBestBuy(stock);
             updateLastPrice(stock);
             updateBestSell(stock);
         }
     }
-    private void updateLastPrice(InvestorPriceRecordLabel stock){
-        Double price = StockPriceDictionary.getPrice(stock.shortName(),stock.stockExchangeName());
-        agent.updateLastPrice(stock,price);
+
+    private void updateLastPrice(InvestorPriceRecordLabel stock) {
+        Double price = StockPriceDictionary.getPrice(stock.shortName(), stock.stockExchangeName());
+        agent.updateLastPrice(stock, price);
 //            System.out.println(stock.shortName()+":"+price+"**************************");
     }
 
@@ -55,16 +57,17 @@ public class PriceCheckerBehaviour extends TickerBehaviour {
         commandMap.put("exchangeName", "");
         commandMap.put("brokerOrderId", "");
 
-        return new Gson().toJson(commandMap);
+        return gson.toJson(commandMap);
     }
+
     private Double extractPriceFromJson(String json) {
         try {
-            Gson gson = new Gson();
-            Type listType = new TypeToken<List<HashMap<String, Object>>>() {}.getType();
+            Type listType = new TypeToken<List<HashMap<String, Object>>>() {
+            }.getType();
             List<HashMap<String, Object>> results = gson.fromJson(json, listType);
 
             if (results != null && !results.isEmpty()) {
-                HashMap<String, Object> topResult = results.get(0); // Pierwszy element
+                HashMap<String, Object> topResult = results.getFirst(); // Pierwszy element
                 return (Double) topResult.get("price"); // Wyciągnięcie ceny
             }
         } catch (Exception e) {
@@ -120,8 +123,4 @@ public class PriceCheckerBehaviour extends TickerBehaviour {
             e.printStackTrace();
         }
     }
-
-
-
-
 }

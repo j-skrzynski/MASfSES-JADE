@@ -4,15 +4,21 @@ import org.example.datamodels.order.AwaitingOrder;
 import org.example.datamodels.order.OrderType;
 
 public class InvestorRequest {
-    private Long amount;
-    private String shortName;
-    private OrderType action;
-    private Double price;
-    private boolean limitless;
+    private final Long amount;
+    private final String shortName;
+    private final OrderType action;
+    private final Double price;
+    private final boolean limitless;
+    private final String stockExchangeName;
 
-
-
-    public InvestorRequest(Long amount, String shortName, OrderType action, Double price, boolean limitless, String stockExchangeName) {
+    public InvestorRequest(
+            Long amount,
+            String shortName,
+            OrderType action,
+            Double price,
+            boolean limitless,
+            String stockExchangeName
+    ) {
         this.amount = amount;
         this.shortName = shortName;
         this.action = action;
@@ -21,23 +27,21 @@ public class InvestorRequest {
         this.stockExchangeName = stockExchangeName;
     }
 
-    public InvestorRequest(AwaitingOrder ao,String stockExchangeName) {
+
+    public InvestorRequest(AwaitingOrder ao, String stockExchangeName) {
         this(
-                ao.getOrder().getQuantity(),
-                ao.getOrder().getSymbol().getShortName(),
-                ao.getOrder().getOrderType(),
-                ao.getOrder().getPrice(),
-                ao.getOrder().hasPriceLimit()==false,
+                ao.order().getQuantity(),
+                ao.order().getSymbol().getShortName(),
+                ao.order().getOrderType(),
+                ao.order().getPrice(),
+                !ao.order().hasPriceLimit(),
                 stockExchangeName
         );
     }
 
-
     public String getStockExchangeName() {
         return stockExchangeName;
     }
-
-    private String stockExchangeName;
 
     public String getShortName() {
         return shortName;
@@ -51,7 +55,7 @@ public class InvestorRequest {
         return amount;
     }
 
-    public boolean isLimitless(){
+    public boolean isLimitless() {
         return limitless;
     }
 

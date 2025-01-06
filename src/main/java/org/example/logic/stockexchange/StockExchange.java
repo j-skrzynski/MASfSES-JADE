@@ -1,16 +1,16 @@
 package org.example.logic.stockexchange;
 
 import jade.core.AID;
+import org.example.datamodels.StockSymbol;
 import org.example.datamodels.order.OrderType;
 import org.example.global.StockDictionary;
 import org.example.global.StockPriceDictionary;
-import org.example.logic.stockexchange.order.PlacableDisposition;
-import org.example.datamodels.StockSymbol;
+import org.example.logic.stockexchange.order.PlaceableDisposition;
+import org.example.logic.stockexchange.order.marketorder.ExchangeOrder;
+import org.example.logic.stockexchange.settlements.TransactionSettlement;
 import org.example.logic.stockexchange.utils.ArtificialBaseline;
 import org.example.logic.stockexchange.utils.EnvRecord;
 import org.example.logic.stockexchange.utils.ExchangeDate;
-import org.example.logic.stockexchange.order.marketorder.ExchangeOrder;
-import org.example.logic.stockexchange.settlements.TransactionSettlement;
 import org.example.logic.stockexchange.utils.OrderSubmitter;
 
 import java.util.HashMap;
@@ -22,14 +22,19 @@ public class StockExchange {
 
     private final String name;
     private final Map<StockSymbol, OrderSheet> orderSheets;
+    private final Long millisecondsPerSession;
+    private final Long sessionsPerYear;
+    private final ArtificialBaseline baseline;
     private ExchangeDate currentSessionStart;
     private Long millisecondsSinceStart;
-    private Long millisecondsPerSession;
-    private Long sessionsPerYear;
-    private ArtificialBaseline baseline;
 
 
-    public StockExchange(String name, ExchangeDate lastSessionClosingDate, Long millisecondsPerSession, Long sessionsPerYear) {
+    public StockExchange(
+            String name,
+            ExchangeDate lastSessionClosingDate,
+            Long millisecondsPerSession,
+            Long sessionsPerYear
+    ) {
         this.name = name;
         this.orderSheets = new HashMap<>();
         this.currentSessionStart = lastSessionClosingDate;
@@ -40,14 +45,15 @@ public class StockExchange {
         this.baseline = new ArtificialBaseline();
     }
 
+    public StockExchange(String name, Long millisecondsPerSession, Long sessionsPerYear) {
+        this(name, new ExchangeDate(), millisecondsPerSession, sessionsPerYear);
+    }
+
     public ArtificialBaseline getBaseline() {
         return baseline;
     }
-    public StockExchange(String name, Long millisecondsPerSession, Long sessionsPerYear){
-        this(name, new ExchangeDate(),millisecondsPerSession,sessionsPerYear);
-    }
 
-    public Set<StockSymbol> getAllStocksInExchange(){
+    public Set<StockSymbol> getAllStocksInExchange() {
         return orderSheets.keySet();
     }
 
@@ -76,7 +82,7 @@ public class StockExchange {
     /**
      * Places an order for a given stock symbol.
      */
-    public void placeOrder(StockSymbol symbol, PlacableDisposition order) {
+    public void placeOrder(StockSymbol symbol, PlaceableDisposition order) {
         OrderSheet orderSheet = orderSheets.get(symbol);
         if (orderSheet == null) {
             throw new IllegalArgumentException("Stock symbol does not exist in the exchange.");
@@ -107,12 +113,12 @@ public class StockExchange {
     }
 
     /**
-     * Fetches and removes the next available transaction cancelation for a specific stock.
+     * Fetches and removes the next available transaction cancellation for a specific stock.
      */
-    public OrderSubmitter popNextCancelationnotification(StockSymbol symbol) {
+    public OrderSubmitter popNextCancellationNotification(StockSymbol symbol) {
         OrderSheet orderSheet = orderSheets.get(symbol);
         if (orderSheet != null) {
-            return orderSheet.popNextCancelation();
+            return orderSheet.popNextCancellation();
         }
         return null;
     }
@@ -140,24 +146,37 @@ public class StockExchange {
         return orderSheets.containsKey(symbol);
     }
 
-    public void advanceExchangeDateBySession(){
+    public void advanceExchangeDateBySession() {
         this.currentSessionStart = currentSessionStart.getNexSessionDate();
         this.millisecondsSinceStart = 0L;
         this.expirationUpdate();
         this.loadArtificialData();
     }
 
-    public void loadArtificialData(){
+    public void loadArtificialData() {
         for (OrderSheet sheet : orderSheets.values()) {
             this.loadArtificialDataForSheet(sheet);
-       }
+        }
     }
 
-    public void loadArtificialDataForSheet(OrderSheet sheet){
+    public void loadArtificialDataForSheet(OrderSheet sheet) {
         String shortName = sheet.getSymbol().getShortName();
         EnvRecord rec = this.baseline.getNextEnvRec(shortName);
-        if(rec != null) {
-            sheet.placeDisposition(new ExchangeOrder(sheet.getSymbol(), OrderType.SELL, currentSessionStart.getNexSessionDate(), rec.price(), rec.quantity(), new OrderSubmitter("Env", new AID("imaginaryBroker", false), "")));
+        if (rec != null) {
+            sheet.placeDisposition(
+                    new ExchangeOrder(
+                            sheet.getSymbol(),
+                            OrderType.SELL,
+                            currentSessionStart.getNexSessionDate(),
+                            rec.price(),
+                            rec.quantity(),
+                            new OrderSubmitter(
+                                    "Env",
+                                    new AID("imaginaryBroker", false),
+                                    ""
+                            )
+                    )
+            );
         }
     }
 
@@ -200,8 +219,8 @@ public class StockExchange {
         return new ExchangeDate(currentSessionStart);
     }
 
-    public Long getSessionsTillYearEnd(){
-        return sessionsPerYear-(currentSessionStart.getSessionId() % sessionsPerYear);
+    public Long getSessionsTillYearEnd() {
+        return sessionsPerYear - (currentSessionStart.getSessionId() % sessionsPerYear);
     }
 
     public Long getMillisecondsPerSession() {

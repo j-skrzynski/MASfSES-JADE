@@ -4,25 +4,14 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 public class OrderParser {
-    private final Gson gson;
-
-    public OrderParser() {
-        this.gson = new Gson();
-    }
-
-
+    private final Gson gson = new Gson();
 
     // Parsowanie AwaitingOrder
     public AwaitingOrder parseAwaitingOrder(JsonObject argumentsJson) throws IllegalArgumentException {
         try {
             JsonObject orderJson = argumentsJson.getAsJsonObject("order");
             Order order = parseOrder(orderJson);
-            if (order.getPrice() == null || order.getPrice().compareTo(0.0) == 0){
-                order.setHasLimit(false);
-            }
-            else{
-                order.setHasLimit(true);
-            }
+            order.setHasLimit(order.getPrice() != null && order.getPrice().compareTo(0.0) != 0);
 
             boolean awaiting = argumentsJson.get("awaiting").getAsBoolean();
             Double price = argumentsJson.get("price").getAsDouble();
