@@ -14,9 +14,11 @@ import org.example.logic.stockexchange.settlements.BuyerSettlement;
 import org.example.logic.stockexchange.settlements.SellerSettlement;
 import org.example.logic.stockexchange.settlements.SettlementCreator;
 import org.example.logic.stockexchange.settlements.TransactionSettlement;
-import org.example.stockexchange.listeners.*;
 import org.example.util.ListenableQueue;
+import org.example.util.QueueEventListener;
+import org.example.visualization.AgentWindow;
 import org.example.visualization.AgentWindowManager;
+import org.example.visualization.viewmodels.StockExchangeViewModel;
 import org.glassfish.pfl.basic.contain.Pair;
 
 import java.util.*;
@@ -51,43 +53,113 @@ public class OrderSheet {
     private final PriceTracker priceTracker;
     private final StockSymbol symbol;
 
-    private String exchangeName;
+    private final AgentWindow exchangeWindow;
 
     private ExchangeOrderingID lastId;
 
-    public OrderSheet(StockSymbol symbol, String exchangeName, AgentWindowManager agentWindowManager) {
-        buyOrders = new ListenableQueue<>(new PriorityQueue<>(new OrderComparatorDescending())) // da najwięcej --- da najmniej  > descending
-                .addListener(new BuyOrderListener(agentWindowManager));
+    private record DefaultVisualizationListener<E>(OrderSheet orderSheet) implements QueueEventListener<E> {
+        @Override
+        public void onAdd(E element) {
+            update();
+        }
 
-        sellOrders = new ListenableQueue<>(new PriorityQueue<>(new OrderComparatorAscending())) // najtańsze --- najdroższe  > ascending
-                .addListener(new SellOrderListener(agentWindowManager));
+        @Override
+        public void onRemove(E element) {
+            update();
+        }
+
+        private void update() {
+            if (orderSheet.getExchangeWindow() != null) {
+                orderSheet.getExchangeWindow().updateAndDraw(getViewModel());
+            }
+        }
+
+        private StockExchangeViewModel getViewModel() {
+            return new StockExchangeViewModel(new LinkedList<>(orderSheet.getBuyOrders()),
+                    new LinkedList<>(orderSheet.getSellOrders()),
+                    new LinkedList<>(orderSheet.getNoLimitBuy()),
+                    new LinkedList<>(orderSheet.getNoLimitSell()),
+                    new LinkedList<>(orderSheet.getAwaitingActivationBuy()),
+                    new LinkedList<>(orderSheet.getAwaitingActivationSell()),
+                    new LinkedList<>(orderSheet.getSettlementsToSend()),
+                    new LinkedList<>(orderSheet.getCanceledOrders()));
+        }
+    }
+
+    public OrderSheet(StockSymbol symbol, String exchangeName) {
+        buyOrders = new ListenableQueue<>(new PriorityQueue<>(new OrderComparatorDescending()))
+                .addListener(new DefaultVisualizationListener<>(this));
+
+        sellOrders = new ListenableQueue<>(new PriorityQueue<>(new OrderComparatorAscending()))
+                .addListener(new DefaultVisualizationListener<>(this));
 
         noLimitSell = new ListenableQueue<>(new LinkedList<ExchangeOrder>())
-                .addListener(new SellOrderListener(agentWindowManager));
+                .addListener(new DefaultVisualizationListener<>(this));
 
         noLimitBuy = new ListenableQueue<>(new LinkedList<ExchangeOrder>())
-                .addListener(new BuyOrderListener(agentWindowManager));
+                .addListener(new DefaultVisualizationListener<>(this));
 
         awaitingActivationBuy = new ListenableQueue<>(new PriorityQueue<>(new AwaitingExchangeOrderComparatorAscending()))
-                .addListener(new AwaitingBuyOrderListener(agentWindowManager));
+                .addListener(new DefaultVisualizationListener<>(this));
 
         awaitingActivationSell = new ListenableQueue<>(new PriorityQueue<>(new AwaitingExchangeOrderComparatorDescending()))
-                .addListener(new AwaitingSellOrderListener(agentWindowManager));
+                .addListener(new DefaultVisualizationListener<>(this));
 
         settlementsToSend = new ListenableQueue<>(new LinkedList<TransactionSettlement>())
-                .addListener(new SentSettlementsListener(agentWindowManager));
+                .addListener(new DefaultVisualizationListener<>(this));
 
         canceledOrders = new ListenableQueue<>(new LinkedList<OrderSubmitter>())
-                .addListener(new CancelledOrdersListener(agentWindowManager));
+                .addListener(new DefaultVisualizationListener<>(this));
 
         priceTracker = new PriceTracker(symbol,exchangeName);
         this.symbol = symbol;
 
+        exchangeWindow = AgentWindowManager.getInstance().getAgentWindows().stream()
+                .filter(aw -> aw.getName() == exchangeName)
+                .findFirst()
+                .orElse(null);
+
         lastId = ExchangeOrderingID.getZero();
+    }
+
+    public ListenableQueue<ExchangeOrder> getBuyOrders() {
+        return buyOrders;
+    }
+
+    public ListenableQueue<ExchangeOrder> getSellOrders() {
+        return sellOrders;
+    }
+
+    public ListenableQueue<ExchangeOrder> getNoLimitBuy() {
+        return noLimitBuy;
+    }
+
+    public ListenableQueue<ExchangeOrder> getNoLimitSell() {
+        return noLimitSell;
+    }
+
+    public ListenableQueue<AwaitingExchangeOrder> getAwaitingActivationBuy() {
+        return awaitingActivationBuy;
+    }
+
+    public ListenableQueue<AwaitingExchangeOrder> getAwaitingActivationSell() {
+        return awaitingActivationSell;
+    }
+
+    public ListenableQueue<TransactionSettlement> getSettlementsToSend() {
+        return settlementsToSend;
+    }
+
+    public ListenableQueue<OrderSubmitter> getCanceledOrders() {
+        return canceledOrders;
     }
 
     public StockSymbol getSymbol() {
         return symbol;
+    }
+
+    public AgentWindow getExchangeWindow() {
+        return exchangeWindow;
     }
 
     private void saveTransaction(BuyerSettlement buyerSettlement, SellerSettlement sellerSettlement) {

@@ -5,36 +5,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AgentWindowManager {
-    private final List<AgentWindow> _agentWindows;
+    private final List<AgentWindow> agentWindows;
 
-    private static AgentWindowManager TEST_INSTANCE;
+    private static AgentWindowManager INSTANCE;
 
-    /**
-     * Dummy method (for now) to retrieve all agent windows
-     * @return AgentWindowManager
-     */
-    public static AgentWindowManager getTestInstance() {
-        if (TEST_INSTANCE != null) {
-            return TEST_INSTANCE;
+    public static AgentWindowManager getInstance() {
+        if (INSTANCE != null) {
+            return INSTANCE;
         }
 
-        TEST_INSTANCE = new AgentWindowManager();
-        SwingUtilities.invokeLater(() -> {
-            TEST_INSTANCE.addAgentWindow(new AgentWindow("GPW"));
-        });
-
-        return TEST_INSTANCE;
+        INSTANCE = new AgentWindowManager();
+        return INSTANCE;
     }
 
-    public AgentWindowManager() {
-        _agentWindows = new ArrayList<>();
-    }
-
-    public void addAgentWindow(AgentWindow window) {
-        _agentWindows.add(window);
+    private AgentWindowManager() {
+        agentWindows = new ArrayList<>();
     }
 
     public List<AgentWindow> getAgentWindows() {
-        return _agentWindows;
+        return agentWindows;
+    }
+
+    public void addAgentWindow(String agentName, Object initialValue) {
+        SwingUtilities.invokeLater(() -> {
+            if (agentWindows.stream().anyMatch(aw -> aw.getName() == agentName)) {
+                System.out.printf("Agent window %s is not added because window with such name already exists%n", agentName);
+            }
+            else {
+                agentWindows.add(new AgentWindow(agentName, initialValue));
+            }
+        });
     }
 }

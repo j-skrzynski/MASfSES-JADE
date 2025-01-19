@@ -1,5 +1,7 @@
 package org.example.datamodels;
 
+import java.util.Objects;
+
 public class StockSymbol {
 
     private final String longName;
@@ -26,6 +28,21 @@ public class StockSymbol {
 
     public Long getShares() {
         return shares;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof StockSymbol that)) return false;
+
+        return Objects.equals(longName, that.longName) &&
+                Objects.equals(shortName, that.shortName) &&
+                Objects.equals(IPOPrice, that.IPOPrice) &&
+                Objects.equals(shares, that.shares);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(longName, shortName, IPOPrice, shares);
     }
 
     public String toString() {

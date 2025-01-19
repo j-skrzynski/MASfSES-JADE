@@ -6,6 +6,8 @@ import org.example.datamodels.order.OrderType;
 import org.example.logic.stockexchange.order.PlacableDisposition;
 import org.example.logic.stockexchange.utils.*;
 
+import java.util.Objects;
+
 public class ExchangeOrder extends Order implements PlacableDisposition {
 
     // SHOULD COVER PKC AND LIMIT
@@ -42,6 +44,19 @@ public class ExchangeOrder extends Order implements PlacableDisposition {
     @Override
     public boolean isAwaiting() {
         return false;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof ExchangeOrder eo)) {
+            return false;
+        }
+
+        return expirationDate == eo.getExpirationDate() &&
+                seqId == eo.getSeqId() &&
+                Objects.equals(quantity, eo.getQuantity()) &&
+                Objects.equals(price, eo.getPrice());
+
     }
 }
 

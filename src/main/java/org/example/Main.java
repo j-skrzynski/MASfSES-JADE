@@ -6,6 +6,7 @@ import jade.core.Runtime;
 import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
 import jade.wrapper.ControllerException;
+import jade.wrapper.StaleProxyException;
 import org.example.agents.DummyAgent;
 import org.example.agents.broker.BrokerAgent;
 import org.example.agents.investor.InvestorAgent;
@@ -15,6 +16,9 @@ import org.example.agents.stockexchange.StockExchangeAgent;
 import org.example.datamodels.EnvRecordQueueCreator;
 import org.example.datamodels.StockSymbol;
 import org.example.logic.stockexchange.utils.EnvRecord;
+import org.example.visualization.AgentWindowManager;
+import org.example.visualization.viewmodels.InvestorViewModel;
+import org.example.visualization.viewmodels.StockExchangeViewModel;
 
 import java.util.*;
 
@@ -44,51 +48,44 @@ public class Main {
 
             List<StockSymbol> supportedStocks = new ArrayList<>();
             supportedStocks.add(new StockSymbol("Apple","AAPL",148.5,10000L));
-            Object[] agentArgs = {"GPW",supportedStocks,baseline}; // Argumenty przekazywane do agenta
-            AgentController gpwAgent = mainContainer.createNewAgent(
-                    "GPW",                      // Nazwa agenta
-                    StockExchangeAgent.class.getName(), // Klasa agenta
-                    agentArgs                  // Argumenty agenta
-            );
 
+            AgentController gpwAgent = createAgent(mainContainer,
+                    "GPW",
+                    StockExchangeAgent.class.getName(),
+                    new Object[]{"GPW", supportedStocks, baseline},
+                    new StockExchangeViewModel());
 
-            Object[] agentArgs2 = {}; // Argumenty przekazywane do agenta
+            Object[] agentArgs2 = {};
             AgentController brokerAgent = mainContainer.createNewAgent(
-                    "Broker1",                      // Nazwa agenta
-                    BrokerAgent.class.getName(), // Klasa agenta
-                    agentArgs2                 // Argumenty agenta
+                    "Broker1",
+                    BrokerAgent.class.getName(),
+                    agentArgs2
             );
-
-            gpwAgent.start();
             brokerAgent.start();
+            gpwAgent.start();
 
-            System.out.println("GPW agent started!");
-
-            AgentController dummyAgent = mainContainer.createNewAgent(
+            createAgent(mainContainer,
                     "DummyAgent",
                     DummyAgent.class.getName(),
-                    null
-            );
+                    null,
+                    new InvestorViewModel(0));
 
-            dummyAgent.start();
-            System.out.println("DummyAgent started and sending messages!");
             List<InvestorPriceRecordLabel> observedStocks = new ArrayList<>();
             observedStocks.add(new InvestorPriceRecordLabel("AAPL","GPW"));
-            AgentController investorAgent = mainContainer.createNewAgent(
+
+            Object[] investorAgentArgs = new Object[] {observedStocks, 10000.0};
+            createAgent(mainContainer,
                     "InvestorAgent",
                     InvestorAgent.class.getName(),
-                    new Object[]{observedStocks, 10000.0}
-            );
-            investorAgent.start();
-            dummyAgent.start();
+                    investorAgentArgs,
+                    new InvestorViewModel((double) investorAgentArgs[1]));
 
-
-            AgentController investorAgent2 = mainContainer.createNewAgent(
+            Object[] ssmaInvestorAgentArgs = new Object[]{observedStocks, 10000.0};
+            createAgent(mainContainer,
                     "SSMAInvestorAgent",
                     SimpleSMAInvestorAgent.class.getName(),
-                    new Object[]{observedStocks, 10000.0}
-            );
-            investorAgent2.start();
+                    ssmaInvestorAgentArgs,
+                    new InvestorViewModel((double) ssmaInvestorAgentArgs[1]));
 
             // Tworzenie agenta Sniffer
             String[] snifferTargets = {"GPW", "Broker1", "DummyAgent","InvestorAgent","SSMAInvestorAgent"};
@@ -99,13 +96,26 @@ public class Main {
                     "jade.tools.sniffer.Sniffer", // Klasa agenta Sniffer
                     new Object[]{snifferTargetArgs} // Przekazanie nazw agentów
             );
-
             snifferAgent.start();
 
             System.out.println("SnifferAgent started and listening to messages!");
-
         } catch (ControllerException e) {
             e.printStackTrace();
         }
+    }
+
+    private static AgentController createAgent(AgentContainer mainContainer,
+                                    String name,
+                                    String className,
+                                    Object[] args,
+                                    Object initialViewModelValue) throws StaleProxyException {
+        AgentController newAgent = mainContainer.createNewAgent(name, className, args);
+        newAgent.start();
+
+        System.out.printf("%s agent started!%n", name);
+
+        AgentWindowManager.getInstance().addAgentWindow(name, initialViewModelValue);
+
+        return newAgent;
     }
 }

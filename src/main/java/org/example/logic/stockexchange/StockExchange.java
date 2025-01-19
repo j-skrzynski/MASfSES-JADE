@@ -1,6 +1,5 @@
 package org.example.logic.stockexchange;
 
-import org.example.visualization.AgentWindowManager;
 import jade.core.AID;
 import org.example.datamodels.order.OrderType;
 import org.example.global.StockDictionary;
@@ -29,7 +28,10 @@ public class StockExchange {
     private ExchangeDate currentSessionStart;
     private Long millisecondsSinceStart;
 
-    public StockExchange(String name, ExchangeDate lastSessionClosingDate, Long millisecondsPerSession, Long sessionsPerYear) {
+    public StockExchange(String name,
+                         ExchangeDate lastSessionClosingDate,
+                         Long millisecondsPerSession,
+                         Long sessionsPerYear) {
         this.name = name;
         this.orderSheets = new HashMap<>();
         this.currentSessionStart = lastSessionClosingDate;
@@ -42,9 +44,6 @@ public class StockExchange {
 
     public ArtificialBaseline getBaseline() {
         return baseline;
-    }
-    public StockExchange(String name, Long millisecondsPerSession, Long sessionsPerYear){
-        this(name, new ExchangeDate(),millisecondsPerSession,sessionsPerYear);
     }
 
     public Set<StockSymbol> getAllStocksInExchange(){
@@ -65,7 +64,7 @@ public class StockExchange {
      */
     public void addStock(StockSymbol symbol) {
         if (!orderSheets.containsKey(symbol)) {
-            orderSheets.put(symbol, new OrderSheet(symbol, name, AgentWindowManager.getTestInstance()));
+            orderSheets.put(symbol, new OrderSheet(symbol, name));
             StockDictionary.registerStockSymbol(symbol);
             this.loadArtificialDataForSheet(orderSheets.get(symbol));
         } else {

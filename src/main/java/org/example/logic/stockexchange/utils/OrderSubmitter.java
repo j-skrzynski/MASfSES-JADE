@@ -30,6 +30,10 @@ public class OrderSubmitter {
         return submitterName;
     }
 
+    public String getSubmitterBroker() {
+        return submitterBroker;
+    }
+
     public String getBrokerOrderId() {
         return brokerOrderId;
     }

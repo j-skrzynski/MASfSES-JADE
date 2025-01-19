@@ -31,15 +31,15 @@ public class DummyAgent extends Agent {
                 "{\n" +
                         "\"command\": \"PLACE_ORDER\",\n" +
                         "\"arguments\": [{\n" +
-                        "\"order\": {\n" +
-                        "\"symbol\": {\"shortName\": \"AAPL\"},\n" +
-                        "\"orderType\": \"SELL\",\n" +
-                        "\"price\": 5.0,\n" +
-                        "\"quantity\": 500,\n" +
-                        "\"expirationSecpification\": \"D\"\n" +
-                        "},\n" +
-                        "\"awaiting\": false,\n" +
-                        "\"price\": 0.0\n" +
+                            "\"order\": {\n" +
+                                "\"symbol\": {\"shortName\": \"AAPL\"},\n" +
+                                "\"orderType\": \"SELL\",\n" +
+                                "\"price\": 5.0,\n" +
+                                "\"quantity\": 500,\n" +
+                                "\"expirationSecpification\": \"D\"\n" +
+                            "},\n" +
+                            "\"awaiting\": false,\n" +
+                            "\"price\": 0.0\n" +
                         "}],\n" +
                         "\"traderName\": \"JohnDoe\",\n" +
                         "\"brokerName\": \"XYZBroker\",\n" +
