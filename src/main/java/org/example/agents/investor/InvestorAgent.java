@@ -40,7 +40,7 @@ public class InvestorAgent extends Agent {
         supportedBrokers.add("Broker1");
     }
 
-    private void registerObservedStock(InvestorPriceRecordLabel label){
+    private void registerObservedStock(InvestorPriceRecordLabel label) {
         observedStocks.add(label);
         bestBuyPrice.put(label, null);
         bestSellPrice.put(label, null);
@@ -64,17 +64,19 @@ public class InvestorAgent extends Agent {
 
     }
 
-
     public Set<InvestorPriceRecordLabel> getObservedStocks() {
         return observedStocks;
     }
-    public void updateBuyPrice(InvestorPriceRecordLabel label, Double price){
+
+    public void updateBuyPrice(InvestorPriceRecordLabel label, Double price) {
         bestBuyPrice.put(label, price);
     }
-    public void updateSellPrice(InvestorPriceRecordLabel label, Double price){
+
+    public void updateSellPrice(InvestorPriceRecordLabel label, Double price) {
         bestSellPrice.put(label, price);
     }
-    public void updateLastPrice(InvestorPriceRecordLabel label, Double price){
+
+    public void updateLastPrice(InvestorPriceRecordLabel label, Double price) {
         lastPrice.put(label, price);
     }
 
@@ -103,45 +105,80 @@ public class InvestorAgent extends Agent {
             return 0.0;
         }
     }
-    protected void depositMoney(String broker, double amount){
+
+    protected void depositMoney(String broker, double amount) {
         BrokerCommandFactory bcf = new BrokerCommandFactory("", traderName);
-        sendMessageToBroker(getBrokerAID(broker), bcf.deposit(amount).getJsonCommand(),"");
+        sendMessageToBroker(getBrokerAID(broker), bcf.deposit(amount).getJsonCommand(), "");
     }
-    protected void withdrawMoney(String broker, double amount){
+
+    protected void withdrawMoney(String broker, double amount) {
         BrokerCommandFactory bcf = new BrokerCommandFactory("", traderName);
-        sendMessageToBroker(getBrokerAID(broker), bcf.withdraw(amount).getJsonCommand(),"");
+        sendMessageToBroker(getBrokerAID(broker), bcf.withdraw(amount).getJsonCommand(), "");
     }
-    protected void registerInBroker(String broker){
+
+    protected void registerInBroker(String broker) {
         BrokerCommandFactory bcf = new BrokerCommandFactory("", traderName);
-        sendMessageToBroker(getBrokerAID(broker), bcf.register().getJsonCommand(),"");
+        sendMessageToBroker(getBrokerAID(broker), bcf.register().getJsonCommand(), "");
     }
-    protected AID getBrokerAID(String broker){
+
+    protected AID getBrokerAID(String broker) {
         return new AID(broker, AID.ISLOCALNAME);
     }
 
-    protected void sendMarketOrder(String shortName, OrderType type, Double price, Long quantity, String exchange, String broker){
+    protected void sendMarketOrder(
+            String shortName,
+            OrderType type,
+            Double price,
+            Long quantity,
+            String exchange,
+            String broker
+    ) {
         BrokerCommandFactory bcf = new BrokerCommandFactory(exchange, traderName);
-        String msg = bcf.marketOrder(shortName,type,price,quantity).getJsonCommand();
+        String msg = bcf.marketOrder(shortName, type, price, quantity).getJsonCommand();
         AID brokerAID = getBrokerAID(broker);
-        sendMessageToBroker(brokerAID, msg,"");
+        sendMessageToBroker(brokerAID, msg, "");
     }
-    protected void sendLimitlessOrder(String shortName, OrderType type, Long quantity, String exchange, String broker){
+
+    protected void sendLimitlessOrder(
+            String shortName,
+            OrderType type,
+            Long quantity,
+            String exchange,
+            String broker
+    ) {
         BrokerCommandFactory bcf = new BrokerCommandFactory(exchange, traderName);
-        String msg = bcf.limitlessOrder(shortName,type,quantity).getJsonCommand();
+        String msg = bcf.limitlessOrder(shortName, type, quantity).getJsonCommand();
         AID brokerAID = getBrokerAID(broker);
-        sendMessageToBroker(brokerAID, msg,"");
+        sendMessageToBroker(brokerAID, msg, "");
     }
-    protected void sendAwaintingOrder(String shortName, OrderType type,Double price, Long quantity,Double activationPrice, String exchange, String broker){
+
+    protected void sendAwaitingOrder(
+            String shortName,
+            OrderType type,
+            Double price,
+            Long quantity,
+            Double activationPrice,
+            String exchange,
+            String broker
+    ) {
         BrokerCommandFactory bcf = new BrokerCommandFactory(exchange, traderName);
-        String msg = bcf.awaitingOrder(shortName,type,price,quantity,activationPrice).getJsonCommand();
+        String msg = bcf.awaitingOrder(shortName, type, price, quantity, activationPrice).getJsonCommand();
         AID brokerAID = getBrokerAID(broker);
-        sendMessageToBroker(brokerAID, msg,"");
+        sendMessageToBroker(brokerAID, msg, "");
     }
-    protected void sendAwaintingLimitlessOrder(String shortName, OrderType type, Long quantity,Double activationPrice, String exchange, String broker){
+
+    protected void sendAwaitingLimitlessOrder(
+            String shortName,
+            OrderType type,
+            Long quantity,
+            Double activationPrice,
+            String exchange,
+            String broker
+    ) {
         BrokerCommandFactory bcf = new BrokerCommandFactory(exchange, traderName);
-        String msg = bcf.awaitingLimitlessOrder(shortName,type,quantity,activationPrice).getJsonCommand();
+        String msg = bcf.awaitingLimitlessOrder(shortName, type, quantity, activationPrice).getJsonCommand();
         AID brokerAID = getBrokerAID(broker);
-        sendMessageToBroker(brokerAID, msg,"");
+        sendMessageToBroker(brokerAID, msg, "");
     }
 
     private void sendMessageToBroker(AID receiver, String content, String requestId) {

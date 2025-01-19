@@ -1,5 +1,5 @@
 package org.example.logic.stockexchange.order;
 
-public interface PlacableDisposition {
+public interface PlaceableDisposition {
     boolean isAwaiting();
 }

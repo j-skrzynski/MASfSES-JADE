@@ -1,8 +1,6 @@
 package org.example.datamodels.order;
 
 
-import org.example.logic.stockexchange.utils.ExchangeDate;
-
 public enum OrderExpirationType {
     D("Ważne na dzień bieżący (D)"),
     WDD("Ważne do określonego dnia (WDD)"), // wymaga popdania na ile sesji ważne
@@ -17,9 +15,6 @@ public enum OrderExpirationType {
         this.description = description;
     }
 
-    public String getDescription() {
-        return description;
-    }
     public static OrderExpirationType fromString(String input) {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
@@ -29,5 +24,9 @@ public enum OrderExpirationType {
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid OrderExpirationType: " + input);
         }
+    }
+
+    public String getDescription() {
+        return description;
     }
 }

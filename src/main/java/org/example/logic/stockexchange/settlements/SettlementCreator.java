@@ -5,11 +5,16 @@ import org.glassfish.pfl.basic.contain.Pair;
 
 public class SettlementCreator {
 
-    public static Pair<BuyerSettlement, SellerSettlement> createSettlement(ExchangeOrder buyer, ExchangeOrder seller, Long tradedQuantity, Double transactionUnitPrice){
-        if( transactionUnitPrice > buyer.getPrice() ){
+    public static Pair<BuyerSettlement, SellerSettlement> createSettlement(
+            ExchangeOrder buyer,
+            ExchangeOrder seller,
+            Long tradedQuantity,
+            Double transactionUnitPrice
+    ) {
+        if (transactionUnitPrice > buyer.getPrice()) {
             throw new RuntimeException("Transaction price is greater than buyer price");
         }
-        if( transactionUnitPrice < seller.getPrice() ){
+        if (transactionUnitPrice < seller.getPrice()) {
             throw new RuntimeException("Transaction price is less than seller price");
         }
 

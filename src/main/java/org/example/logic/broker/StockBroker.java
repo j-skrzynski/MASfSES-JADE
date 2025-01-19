@@ -19,30 +19,30 @@ public class StockBroker {
         supportedStockMarketsNames = new ArrayList<>();
     }
 
-    public void registerTrader(String name){
+    public void registerTrader(String name) {
         InvestorAccount investorAccount = new InvestorAccount();
-        if(accounts.containsKey(name)){
+        if (accounts.containsKey(name)) {
             throw new RuntimeException("Trader already exists");
         }
         accounts.put(name, investorAccount);
     }
 
     public List<WalletRecord> getInvestorPortfolio(String name) {
-         if(!accounts.containsKey(name)){
-             throw new RuntimeException("Trader does not exist");
-         }
-         return accounts.get(name).getWallet();
+        if (!accounts.containsKey(name)) {
+            throw new RuntimeException("Trader does not exist");
+        }
+        return accounts.get(name).getWallet();
     }
 
     public Double getMoneyBalance(String name) {
-        if(!accounts.containsKey(name)){
+        if (!accounts.containsKey(name)) {
             throw new RuntimeException("Trader does not exist");
         }
         return accounts.get(name).getBalance();
     }
 
     public void deposit(String name, Double amount) {
-        if(!accounts.containsKey(name)){
+        if (!accounts.containsKey(name)) {
             throw new RuntimeException("Trader does not exist");
         }
         accounts.get(name).addMoney(amount);
@@ -74,22 +74,20 @@ public class StockBroker {
         accounts.get(name).processTransactionResult(tr);
     }
 
-    public AID getExchangeAdressee(String exchangeName){
-        if(this.supportedStockMarketsNames.contains(exchangeName)) {
-            AID agentAID = new AID(exchangeName, AID.ISLOCALNAME);
-            return agentAID;
-        }
-        else{
+    public AID getExchangeAddressee(String exchangeName) {
+        if (this.supportedStockMarketsNames.contains(exchangeName)) {
+            return new AID(exchangeName, AID.ISLOCALNAME);
+        } else {
             throw new RuntimeException("Specified stock market is not supported by this broker");
         }
     }
 
-    public void addStockExchange(String exchangeName){
+    public void addStockExchange(String exchangeName) {
         this.supportedStockMarketsNames.add(exchangeName);
     }
 
     public void addStockToAccount(String name, String shortName, Long amount) {
-        if(!accounts.containsKey(name)){
+        if (!accounts.containsKey(name)) {
             throw new RuntimeException("Trader does not exist");
         }
         accounts.get(name).addStockToAccount(StockDictionary.getStockIdByShortName(shortName), amount);

@@ -7,47 +7,49 @@ import java.util.List;
 
 public abstract class BrokerCommand {
 
+    protected List<Object> arguments;
     private String command = "";
-    private String exchangeName ="";
+    private String exchangeName = "";
     private String traderName = "";
     private String brokerOrderId = "";
-    protected List<Object> arguments;
 
     public BrokerCommand() {
-        arguments = new ArrayList<Object>();
-    }
-
-    protected BrokerCommand setCommand(String command) {
-        this.command = command;
-        return this;
-    }
-    public BrokerCommand setExchangeName(String exchangeName) {
-        this.exchangeName = exchangeName;
-        return this;
-    }
-    public BrokerCommand setTraderName(String traderName) {
-        this.traderName = traderName;
-        return this;
-    }
-    public BrokerCommand setBrokerOrderId(String brokerOrderId) {
-        this.brokerOrderId = brokerOrderId;
-        return this;
+        arguments = new ArrayList<>();
     }
 
     public String getCommand() {
         return command;
     }
 
+    protected void setCommand(String command) {
+        this.command = command;
+    }
+
     public String getExchangeName() {
         return exchangeName;
+    }
+
+    public BrokerCommand setExchangeName(String exchangeName) {
+        this.exchangeName = exchangeName;
+        return this;
     }
 
     public String getTraderName() {
         return traderName;
     }
 
+    public BrokerCommand setTraderName(String traderName) {
+        this.traderName = traderName;
+        return this;
+    }
+
     public String getBrokerOrderId() {
         return brokerOrderId;
+    }
+
+    public BrokerCommand setBrokerOrderId(String brokerOrderId) {
+        this.brokerOrderId = brokerOrderId;
+        return this;
     }
 
     public List<Object> getArguments() {

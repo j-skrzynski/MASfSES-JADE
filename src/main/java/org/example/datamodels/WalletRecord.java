@@ -8,6 +8,7 @@ public class WalletRecord {
         this.stock = stock;
         this.amount = amount;
     }
+
     public StockSymbol getStock() {
         return stock;
     }

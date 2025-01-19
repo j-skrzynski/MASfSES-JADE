@@ -1,17 +1,14 @@
 package org.example.logic.stockexchange.order.awaitingorder;
 
-import org.example.logic.stockexchange.order.PlacableDisposition;
+import org.example.logic.stockexchange.order.PlaceableDisposition;
 import org.example.logic.stockexchange.order.marketorder.ExchangeOrder;
 
 import java.util.Objects;
 
-public class AwaitingExchangeOrder implements PlacableDisposition {
-
-
-
+public class AwaitingExchangeOrder implements PlaceableDisposition {
     /// This order is going to be released after activation
-    private ExchangeOrder order;
-    private Double activationPrice;
+    private final ExchangeOrder order;
+    private final Double activationPrice;
 
     public AwaitingExchangeOrder(ExchangeOrder order, Double activationPrice) {
         super();
@@ -19,11 +16,11 @@ public class AwaitingExchangeOrder implements PlacableDisposition {
         this.activationPrice = activationPrice;
     }
 
-    public ExchangeOrder getActivatedOrder(){
+    public ExchangeOrder getActivatedOrder() {
         return order;
     }
 
-    public Double getActivationPrice(){
+    public Double getActivationPrice() {
         return activationPrice;
     }
 

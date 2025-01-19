@@ -17,5 +17,4 @@ public class AwaitingExchangeOrderComparatorAscending implements Comparator<Awai
     public boolean equals(Object obj) {
         return this == obj;
     }
-
 }

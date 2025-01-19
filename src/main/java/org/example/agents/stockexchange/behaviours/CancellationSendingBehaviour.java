@@ -7,17 +7,14 @@ import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.example.agents.stockexchange.StockExchangeAgent;
 import org.example.datamodels.StockSymbol;
-import org.example.logic.stockexchange.settlements.TransactionSettlement;
 import org.example.logic.stockexchange.utils.OrderSubmitter;
 
 import java.util.logging.*;
 
+public class CancellationSendingBehaviour extends TickerBehaviour {
+    private static final Logger logger = Logger.getLogger(CancellationSendingBehaviour.class.getName());
 
-import java.util.logging.*;
-
-public class CancelationSendingBehaviour extends TickerBehaviour {
-    private static final Logger logger = Logger.getLogger(CancelationSendingBehaviour.class.getName());
-    static{
+    static {
         ConsoleHandler consoleHandler = new ConsoleHandler();
         consoleHandler.setLevel(Level.INFO); // Log messages at INFO level or higher
         logger.addHandler(consoleHandler);
@@ -31,8 +28,10 @@ public class CancelationSendingBehaviour extends TickerBehaviour {
 
     }
 
-    private StockExchangeAgent agent;
-    public CancelationSendingBehaviour(StockExchangeAgent a, long period) {
+    private final StockExchangeAgent agent;
+    private final Gson gson = new Gson();
+
+    public CancellationSendingBehaviour(StockExchangeAgent a, long period) {
         super(a, period);
         agent = a;
     }
@@ -45,11 +44,12 @@ public class CancelationSendingBehaviour extends TickerBehaviour {
     private void broadcastSettlements() {
 //        logger.info("["+agent.getStockExchange().getName()+"] broadcasting settlements");
         for (StockSymbol symbol : agent.getStockExchange().getAllStocksInExchange()) {
-            OrderSubmitter adressee = agent.getStockExchange().popNextCancelationnotification(symbol);
+            OrderSubmitter adressee = agent.getStockExchange().popNextCancellationNotification(symbol);
 
             while (adressee != null) {
                 ACLMessage message = new ACLMessage(ACLMessage.INFORM);
-                logger.info("["+agent.getStockExchange().getName()+"] Sending cancelation of "+ adressee.getBrokerOrderId() + " to " + adressee.getBroker());
+                logger.info("[" + agent.getStockExchange().getName() + "] Sending cancellation of " +
+                        adressee.getBrokerOrderId() + " to " + adressee.getBroker());
 
 
                 JsonObject commandObject = new JsonObject();
@@ -64,13 +64,12 @@ public class CancelationSendingBehaviour extends TickerBehaviour {
 //                arguments.add(brokerOrderId);
 //                commandObject.add("arguments", arguments);
 
-                Gson gson = new Gson();
                 message.setContent(gson.toJson(commandObject));
                 message.addReceiver(adressee.getBroker());
                 agent.send(message);
 
                 // Pobierz następne rozliczenie dla tego symbolu
-                adressee = agent.getStockExchange().popNextCancelationnotification(symbol);
+                adressee = agent.getStockExchange().popNextCancellationNotification(symbol);
             }
         }
     }

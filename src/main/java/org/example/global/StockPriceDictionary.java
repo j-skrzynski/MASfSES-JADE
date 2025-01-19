@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class StockPriceDictionary {
 
-    private static HashMap<String,HashMap<String,Double>> stockPrice = new HashMap<>(); // exchange name / shock short / value
+    private static final HashMap<String,HashMap<String,Double>> stockPrice = new HashMap<>(); // exchange name / shock short / value
 
     public static void addStockMarket(String marketName){
         stockPrice.put(marketName, new HashMap<>());
