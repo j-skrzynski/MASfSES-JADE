@@ -47,6 +47,9 @@ public class OrderSheet {
     private PriceTracker priceTracker;
     private StockSymbol symbol;
 
+    public PriceTracker getPriceTracker() {
+        return priceTracker;
+    }
     public StockSymbol getSymbol() {
         return symbol;
     }

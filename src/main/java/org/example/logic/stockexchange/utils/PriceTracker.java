@@ -46,6 +46,13 @@ public class PriceTracker {
         logTransaction(price,quantity,buyer.getLogName(),seller.getLogName());
         StockPriceDictionary.addPrice(symbol.getShortName(), exchangeName,price);
     }
+
+    public void submitArtificialData(Double price){
+        history.add(new Pair<>(price,-1L));
+        lastPrice = price;
+        StockPriceDictionary.addPrice(symbol.getShortName(), exchangeName,price);
+    }
+
     public Double getLastPrice(){
         return lastPrice;
     }

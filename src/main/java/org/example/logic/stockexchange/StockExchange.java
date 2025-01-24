@@ -154,10 +154,17 @@ public class StockExchange {
     }
 
     public void loadArtificialDataForSheet(OrderSheet sheet){
+        boolean flag = true;
         String shortName = sheet.getSymbol().getShortName();
         EnvRecord rec = this.baseline.getNextEnvRec(shortName);
         if(rec != null) {
-            sheet.placeDisposition(new ExchangeOrder(sheet.getSymbol(), OrderType.SELL, currentSessionStart.getNexSessionDate(), rec.price(), rec.quantity(), new OrderSubmitter("Env", new AID("imaginaryBroker", false), "")));
+            if (flag){
+                sheet.placeDisposition(new ExchangeOrder(sheet.getSymbol(), OrderType.SELL, currentSessionStart.getNexSessionDate(), rec.price()*1.005, rec.quantity(), new OrderSubmitter("Env", new AID("imaginaryBroker", false), "")));
+                sheet.placeDisposition(new ExchangeOrder(sheet.getSymbol(), OrderType.BUY, currentSessionStart.getNexSessionDate(), rec.price()*0.995, rec.quantity(), new OrderSubmitter("Env", new AID("imaginaryBroker", false), "")));
+                sheet.getPriceTracker().submitArtificialData(rec.price());
+            }
+            else
+                sheet.placeDisposition(new ExchangeOrder(sheet.getSymbol(), OrderType.SELL, currentSessionStart.getNexSessionDate(), rec.price(), rec.quantity(), new OrderSubmitter("Env", new AID("imaginaryBroker", false), "")));
         }
     }
 

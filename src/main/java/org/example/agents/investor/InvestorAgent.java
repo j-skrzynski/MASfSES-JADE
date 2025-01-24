@@ -121,25 +121,25 @@ public class InvestorAgent extends Agent {
 
     protected void sendMarketOrder(String shortName, OrderType type, Double price, Long quantity, String exchange, String broker){
         BrokerCommandFactory bcf = new BrokerCommandFactory(exchange, traderName);
-        String msg = bcf.marketOrder(shortName,type,price,quantity).getJsonCommand();
+        String msg = bcf.marketOrder(shortName,type,price,quantity).expWDA().getJsonCommand();
         AID brokerAID = getBrokerAID(broker);
         sendMessageToBroker(brokerAID, msg,"");
     }
     protected void sendLimitlessOrder(String shortName, OrderType type, Long quantity, String exchange, String broker){
         BrokerCommandFactory bcf = new BrokerCommandFactory(exchange, traderName);
-        String msg = bcf.limitlessOrder(shortName,type,quantity).getJsonCommand();
+        String msg = bcf.limitlessOrder(shortName,type,quantity).expWDA().getJsonCommand();
         AID brokerAID = getBrokerAID(broker);
         sendMessageToBroker(brokerAID, msg,"");
     }
     protected void sendAwaintingOrder(String shortName, OrderType type,Double price, Long quantity,Double activationPrice, String exchange, String broker){
         BrokerCommandFactory bcf = new BrokerCommandFactory(exchange, traderName);
-        String msg = bcf.awaitingOrder(shortName,type,price,quantity,activationPrice).getJsonCommand();
+        String msg = bcf.awaitingOrder(shortName,type,price,quantity,activationPrice).expWDA().getJsonCommand();
         AID brokerAID = getBrokerAID(broker);
         sendMessageToBroker(brokerAID, msg,"");
     }
     protected void sendAwaintingLimitlessOrder(String shortName, OrderType type, Long quantity,Double activationPrice, String exchange, String broker){
         BrokerCommandFactory bcf = new BrokerCommandFactory(exchange, traderName);
-        String msg = bcf.awaitingLimitlessOrder(shortName,type,quantity,activationPrice).getJsonCommand();
+        String msg = bcf.awaitingLimitlessOrder(shortName,type,quantity,activationPrice).expWDA().getJsonCommand();
         AID brokerAID = getBrokerAID(broker);
         sendMessageToBroker(brokerAID, msg,"");
     }
