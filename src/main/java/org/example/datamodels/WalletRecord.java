@@ -1,5 +1,7 @@
 package org.example.datamodels;
 
+import java.util.Objects;
+
 public class WalletRecord {
     private final StockSymbol stock;
     private Long amount;
@@ -27,6 +29,16 @@ public class WalletRecord {
 
     public void sub(Long amount) {
         this.amount -= amount;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof WalletRecord walletRecord)) {
+            return false;
+        }
+
+        return Objects.equals(amount, walletRecord.getAmount()) &&
+                Objects.equals(stock, walletRecord.getStock());
     }
 
     public String toString() {

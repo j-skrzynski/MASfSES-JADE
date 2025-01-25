@@ -4,6 +4,8 @@ import org.example.datamodels.StockSymbol;
 import org.example.datamodels.order.OrderType;
 import org.example.global.StockDictionary;
 
+import java.util.Objects;
+
 public class InvestorOrderRecord {
     /*
      * Tu nie rozrózniamy czy jest awaiting czy nie bo w zasadzier to nas nie interesi tutaj, w środku awaiting jest i
@@ -93,5 +95,29 @@ public class InvestorOrderRecord {
 
     public StockSymbol getStockSymbol() {
         return symbol;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof InvestorOrderRecord investorOrderRecord)) {
+            return false;
+        }
+        return limit == investorOrderRecord.isLimit() &&
+                Objects.equals(orderId, investorOrderRecord.getOrderId()) &&
+                Objects.equals(symbol, investorOrderRecord.getStockSymbol()) &&
+                Objects.equals(action, investorOrderRecord.getAction()) &&
+                Objects.equals(amountOfStockToBeBought, investorOrderRecord.getAmountOfStockToBeBought()) &&
+                Objects.equals(amountOfStockToBeSold, investorOrderRecord.getAmountOfStockToBeSold()) &&
+                Objects.equals(moneyLocked, investorOrderRecord.getMoneyLocked());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getOrderId(), symbol, isLimit(), getAction(), getAmountOfStockToBeBought(), getAmountOfStockToBeSold(), getMoneyLocked());
+    }
+
+    @Override
+    public String toString() {
+        return super.toString();
     }
 }

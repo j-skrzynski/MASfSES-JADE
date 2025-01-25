@@ -51,4 +51,8 @@ public class PriceTracker {
     public Double getLastPrice() {
         return lastPrice;
     }
+
+    public List<Pair<Double, Long>> getHistory() {
+        return history;
+    }
 }

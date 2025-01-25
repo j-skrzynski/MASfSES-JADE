@@ -20,7 +20,7 @@ public class StockBroker {
     }
 
     public void registerTrader(String name) {
-        InvestorAccount investorAccount = new InvestorAccount();
+        InvestorAccount investorAccount = new InvestorAccount(name);
         if (accounts.containsKey(name)) {
             throw new RuntimeException("Trader already exists");
         }

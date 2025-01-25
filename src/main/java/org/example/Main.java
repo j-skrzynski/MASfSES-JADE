@@ -17,7 +17,6 @@ import org.example.datamodels.EnvRecordQueueCreator;
 import org.example.datamodels.StockSymbol;
 import org.example.logic.stockexchange.utils.EnvRecord;
 import org.example.visualization.AgentWindowManager;
-import org.example.visualization.viewmodels.InvestorViewModel;
 import org.example.visualization.viewmodels.StockExchangeViewModel;
 
 import java.util.*;
@@ -68,7 +67,7 @@ public class Main {
                     "DummyAgent",
                     DummyAgent.class.getName(),
                     null,
-                    new InvestorViewModel(0));
+                    null);
 
             List<InvestorPriceRecordLabel> observedStocks = new ArrayList<>();
             observedStocks.add(new InvestorPriceRecordLabel("AAPL", "GPW"));
@@ -78,14 +77,14 @@ public class Main {
                     "InvestorAgent",
                     InvestorAgent.class.getName(),
                     investorAgentArgs,
-                    new InvestorViewModel((double) investorAgentArgs[1]));
+                    null);
 
             Object[] ssmaInvestorAgentArgs = new Object[]{observedStocks, 10000.0};
             createAgent(mainContainer,
                     "SSMAInvestorAgent",
                     SimpleSMAInvestorAgent.class.getName(),
                     ssmaInvestorAgentArgs,
-                    new InvestorViewModel((double) ssmaInvestorAgentArgs[1]));
+                    null);
 
             // Tworzenie agenta Sniffer
             String[] snifferTargets = {"GPW", "Broker1", "DummyAgent", "InvestorAgent", "SSMAInvestorAgent"};
@@ -112,9 +111,9 @@ public class Main {
         AgentController newAgent = mainContainer.createNewAgent(name, className, args);
         newAgent.start();
 
-        System.out.printf("%s agent started!%n", name);
-
-        AgentWindowManager.getInstance().addAgentWindow(name, initialViewModelValue);
+        if (initialViewModelValue != null) {
+            AgentWindowManager.getInstance().addAgentWindow(name, initialViewModelValue, null);
+        }
 
         return newAgent;
     }

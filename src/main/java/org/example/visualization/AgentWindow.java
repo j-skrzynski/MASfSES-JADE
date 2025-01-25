@@ -1,8 +1,8 @@
 package org.example.visualization;
 
-import org.example.visualization.viewmodels.InvestorViewModel;
+import org.example.visualization.viewmodels.TraderViewModel;
 import org.example.visualization.viewmodels.StockExchangeViewModel;
-import org.example.visualization.windowpanels.InvestorWindowPanel;
+import org.example.visualization.windowpanels.TraderWindowPanel;
 import org.example.visualization.windowpanels.StockExchangeWindowPanel;
 
 import javax.swing.*;
@@ -43,9 +43,9 @@ public class AgentWindow {
     }
 
     private void createPanel(JFrame frame, Object initialViewModel) {
-        if (initialViewModel instanceof InvestorViewModel initialInvestorViewModel) {
-            InvestorWindowPanel windowPanel = new InvestorWindowPanel(initialInvestorViewModel);
-            updateFunc = model -> windowPanel.setValue((InvestorViewModel) model);
+        if (initialViewModel instanceof TraderViewModel initialTraderViewModel) {
+            TraderWindowPanel windowPanel = new TraderWindowPanel(initialTraderViewModel);
+            updateFunc = model -> windowPanel.setValue((TraderViewModel) model);
 
             frame.getContentPane().add(windowPanel);
         }

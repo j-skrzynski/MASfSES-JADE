@@ -4,36 +4,39 @@ import org.example.logic.stockexchange.order.awaitingorder.AwaitingExchangeOrder
 import org.example.logic.stockexchange.order.marketorder.ExchangeOrder;
 import org.example.logic.stockexchange.settlements.TransactionSettlement;
 import org.example.logic.stockexchange.utils.OrderSubmitter;
+import org.example.visualization.Constants;
+import org.example.visualization.utils.Layout;
+import org.example.visualization.utils.StatisticalGraphics;
+import org.example.visualization.utils.StringUtils;
 import org.example.visualization.viewmodels.StockExchangeViewModel;
+import org.glassfish.pfl.basic.contain.Pair;
 
 import java.awt.*;
-import java.util.Queue;
+import java.util.*;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class StockExchangeWindowPanel extends BaseWindowPanel<StockExchangeViewModel> {
     private static final int PANEL_WIDTH = 1000;
-    private static final int PANEL_HEIGHT = 750;
+    private static final int PANEL_HEIGHT = 800;
 
-    private static final int FONT_SIZE = 10;
+    private static final int TEXT_HEADING_HEIGHT = 20;
+    private static final int QUEUE_LABEL_WIDTH = 100;
 
-    private static final int PADDING_LEFT = 50;
-    private static final int PADDING_TOP = 50;
-    private static final int TEXT_PADDING_LEFT = 2;
-    private static final int QUEUE_LABEL_PADDING_TOP = 10;
+    private static final int EXCHANGE_ORDER_RECT_HEIGHT = 60;
+    private static final int AWAITING_EXCHANGE_ORDER_RECT_HEIGHT = 80;
+    private static final int TRANSACTION_SETTLEMENT_RECT_HEIGHT = 80;
+    private static final int ORDER_SUBMITTER_RECT_HEIGHT = 80;
 
-    private static final int EXCHANGE_ORDER_RECT_WIDTH = 40;
-    private static final int EXCHANGE_ORDER_RECT_HEIGHT = 40;
+    private static final int PLOT_WIDTH = 300;
+    private static final int PLOT_HEIGHT = 300;
 
-    private static final int ACTIVATION_PRICE_RECT_WIDTH = 40;
-    private static final int ACTIVATION_PRICE_RECT_HEIGHT = 20;
+    private static final int ACTION_INDICATOR_WIDTH = 5;
+    private static final int ACTION_INDICATOR_HEIGHT = 5;
 
-    private static final int TRANSACTION_SETTLEMENT_RECT_WIDTH = 100;
-    private static final int TRANSACTION_SETTLEMENT_RECT_HEIGHT = 40;
-
-    private static final int ORDER_SUBMITTER_RECT_WIDTH = 100;
-    private static final int ORDER_SUBMITTER_RECT_HEIGHT = 40;
-
-    private static final int QUEUE_HORIZONTAL_GAP = 10;
     private static final int QUEUE_VERTICAL_GAP = 30;
+
+    private int queueY;
 
     public StockExchangeWindowPanel(StockExchangeViewModel initialModel) {
         super(PANEL_WIDTH, PANEL_HEIGHT, initialModel);
@@ -44,50 +47,113 @@ public class StockExchangeWindowPanel extends BaseWindowPanel<StockExchangeViewM
         try {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(Color.black);
-            g2.setFont(new Font("TimesRoman", Font.PLAIN, FONT_SIZE));
 
-            int startY = PADDING_TOP;
+            // draw queues
 
-            drawQueueHeading(g2, "Buy orders queue", startY);
-            drawExchangeOrders(newValue.getBuyOrders(), g2, startY);
-            startY += EXCHANGE_ORDER_RECT_HEIGHT + QUEUE_VERTICAL_GAP;
+            resetY();
 
-            drawQueueHeading(g2, "Sell orders queue", startY);
-            drawExchangeOrders(newValue.getSellOrders(), g2, startY);
-            startY += EXCHANGE_ORDER_RECT_HEIGHT + QUEUE_VERTICAL_GAP;
+            drawQueue(g2,
+                    newValue.getBuyOrders().toArray(new ExchangeOrder[0]),
+                    dp -> drawExchangeOrder(dp, true, false),
+                    "Buy orders queue",
+                    EXCHANGE_ORDER_RECT_HEIGHT);
 
-            drawQueueHeading(g2, "No limit buy queue", startY);
-            drawExchangeOrders(newValue.getNoLimitBuy(), g2, startY);
-            startY += EXCHANGE_ORDER_RECT_HEIGHT + QUEUE_VERTICAL_GAP;
+            drawQueue(g2,
+                    newValue.getSellOrders().toArray(new ExchangeOrder[0]),
+                    dp -> drawExchangeOrder(dp, false, false),
+                    "Sell orders queue",
+                    EXCHANGE_ORDER_RECT_HEIGHT);
 
-            drawQueueHeading(g2, "No limit sell queue", startY);
-            drawExchangeOrders(newValue.getNoLimitSell(), g2, startY);
-            startY += EXCHANGE_ORDER_RECT_HEIGHT + QUEUE_VERTICAL_GAP;
+            drawQueue(g2,
+                    newValue.getNoLimitBuy().toArray(new ExchangeOrder[0]),
+                    dp -> drawExchangeOrder(dp, true, true),
+                    "No limit buy queue",
+                    EXCHANGE_ORDER_RECT_HEIGHT);
 
-            drawQueueHeading(g2, "Awaiting activation buy queue", startY);
-            drawAwaitingExchangeOrders(newValue.getAwaitingActivationBuy(), g2, startY);
-            startY += EXCHANGE_ORDER_RECT_HEIGHT + ACTIVATION_PRICE_RECT_HEIGHT + QUEUE_VERTICAL_GAP;
+            drawQueue(g2,
+                    newValue.getNoLimitSell().toArray(new ExchangeOrder[0]),
+                    dp -> drawExchangeOrder(dp, false, true),
+                    "No limit sell queue",
+                    EXCHANGE_ORDER_RECT_HEIGHT);
 
-            drawQueueHeading(g2, "Awaiting activation sell queue", startY);
-            drawAwaitingExchangeOrders(newValue.getAwaitingActivationSell(), g2, startY);
-            startY += EXCHANGE_ORDER_RECT_HEIGHT + ACTIVATION_PRICE_RECT_HEIGHT + QUEUE_VERTICAL_GAP;
+            drawQueue(g2,
+                    newValue.getAwaitingActivationBuy().toArray(new AwaitingExchangeOrder[0]),
+                    dp -> drawAwaitingExchangeOrder(dp, true),
+                    "Awaiting activation buy queue",
+                    AWAITING_EXCHANGE_ORDER_RECT_HEIGHT);
 
-            drawQueueHeading(g2, "Settlements to send queue", startY);
-            drawSettlementsToSend(newValue.getSettlementsToSend(), g2, startY);
-            startY += TRANSACTION_SETTLEMENT_RECT_HEIGHT + EXCHANGE_ORDER_RECT_HEIGHT + QUEUE_VERTICAL_GAP;
+            drawQueue(g2,
+                    newValue.getAwaitingActivationSell().toArray(new AwaitingExchangeOrder[0]),
+                    dp -> drawAwaitingExchangeOrder(dp, false),
+                    "Awaiting activation sell queue",
+                    AWAITING_EXCHANGE_ORDER_RECT_HEIGHT);
 
-            drawQueueHeading(g2, "Canceled orders queue", startY);
-            drawCancelledOrders(newValue.getCanceledOrders(), g2, startY);
+            drawQueue(g2,
+                    newValue.getSettlementsToSend().toArray(new TransactionSettlement[0]),
+                    this::drawTransactionSettlement,
+                    "Settlements to send queue",
+                    TRANSACTION_SETTLEMENT_RECT_HEIGHT);
+
+            drawQueue(g2,
+                    newValue.getCanceledOrders().toArray(new OrderSubmitter[0]),
+                    this::drawCancelledOrder,
+                    "Canceled orders queue",
+                    ORDER_SUBMITTER_RECT_HEIGHT);
+
+            // draw history plots
+
+            List<Pair<Double, Long>> history = newValue.getHistory();
+
+            Layout.drawText(g2, "Price history", PANEL_WIDTH / 2, TEXT_HEADING_HEIGHT / 2);
+
+            StatisticalGraphics.plot2D(g2,
+                    history.stream().map(Pair::first).toList().toArray(new Double[0]),
+                    PANEL_WIDTH / 2,
+                    TEXT_HEADING_HEIGHT,
+                    PLOT_WIDTH,
+                    PLOT_HEIGHT);
+
+            Layout.drawText(g2, "Quantity history", PANEL_WIDTH / 2, TEXT_HEADING_HEIGHT + PLOT_HEIGHT + TEXT_HEADING_HEIGHT / 2);
+
+            StatisticalGraphics.plot2D(g2,
+                    history.stream().map(p -> (double)p.second()).toList().toArray(new Double[0]),
+                    PANEL_WIDTH / 2,
+                    PLOT_HEIGHT + 2 * TEXT_HEADING_HEIGHT,
+                    PLOT_WIDTH,
+                    PLOT_HEIGHT);
         }
         catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }
 
-    private void drawQueueHeading(Graphics2D g2, String queueName, int y) {
-        drawHorizontalLine(g2, y - QUEUE_VERTICAL_GAP / 2);
-        g2.drawString(queueName, PADDING_LEFT, y - QUEUE_VERTICAL_GAP / 2 + QUEUE_LABEL_PADDING_TOP);
+    private void resetY() {
+        queueY = 0;
+    }
+
+    private <T> void drawQueue(Graphics2D g2,
+                               T[] items,
+                               Consumer<Layout.DrawParameters<T>> drawFunc,
+                               String queueName,
+                               int queueHeight) {
+        Layout.drawList(g2,
+                new ArrayList<>(Collections.singletonList(queueName)),
+                0,
+                queueY,
+                queueY + queueHeight,
+                Constants.DEFAULT_FONT_SIZE,
+                Color.black);
+
+        Layout.drawGrid(g2,
+                items,
+                drawFunc,
+                QUEUE_LABEL_WIDTH,
+                queueY,
+                PANEL_WIDTH / 2.0 - QUEUE_LABEL_WIDTH,
+                queueHeight);
+
+        queueY += queueHeight + QUEUE_VERTICAL_GAP;
+        drawHorizontalLine(g2, queueY - QUEUE_VERTICAL_GAP / 2);
     }
 
     private void drawHorizontalLine(Graphics2D g2, int y) {
@@ -95,82 +161,134 @@ public class StockExchangeWindowPanel extends BaseWindowPanel<StockExchangeViewM
         g2.drawLine(0, y, PANEL_WIDTH / 2, y);
     }
 
-    private void drawExchangeOrders(Queue<ExchangeOrder> exchangeOrders, Graphics2D g2, int y) {
-        int x = PADDING_LEFT;
-        for (ExchangeOrder eo : exchangeOrders) {
-            drawExchangeOrder(eo, g2, x, y);
+    private void drawExchangeOrder(Layout.DrawParameters<ExchangeOrder> drawParameters, boolean buy, boolean limit) {
+        Graphics2D g2 = drawParameters.g2();
+        ExchangeOrder item = drawParameters.item();
+        int startX = (int)drawParameters.startX();
+        int startY = (int)drawParameters.startY();
+        int cellSize = (int)drawParameters.cellSize();
 
-            x += EXCHANGE_ORDER_RECT_WIDTH + QUEUE_HORIZONTAL_GAP;
-        }
-    }
-
-    private void drawAwaitingExchangeOrders(Queue<AwaitingExchangeOrder> awaitingExchangeOrders, Graphics2D g2, int y) {
-        int x = PADDING_LEFT;
-        for (AwaitingExchangeOrder eo : awaitingExchangeOrders) {
-            drawExchangeOrder(eo.getActivatedOrder(), g2, x, y);
-            drawActivationPrice(eo.getActivationPrice(), g2, x, y + EXCHANGE_ORDER_RECT_HEIGHT);
-
-            x += EXCHANGE_ORDER_RECT_WIDTH + QUEUE_HORIZONTAL_GAP;
-        }
-    }
-
-    private void drawSettlementsToSend(Queue<TransactionSettlement> settlementsToSend, Graphics2D g2, int y) {
-        int x = PADDING_LEFT;
-        for (TransactionSettlement ts : settlementsToSend) {
-            g2.setColor(Color.darkGray);
-            g2.fillRect(x, y, TRANSACTION_SETTLEMENT_RECT_WIDTH, TRANSACTION_SETTLEMENT_RECT_HEIGHT);
-
-            g2.setColor(Color.white);
-            g2.drawString(String.format("%s$ to pay, %s$ to withdraw", ts.getToPay(), ts.getToWithdraw()), x + TEXT_PADDING_LEFT, y + TRANSACTION_SETTLEMENT_RECT_HEIGHT / 3);
-            g2.drawString(String.format("%s bought, %s sold", ts.getBoughtStock(), ts.getSoldStock()), x + TEXT_PADDING_LEFT, y + TRANSACTION_SETTLEMENT_RECT_HEIGHT * 2 / 3);
-
-            g2.setColor(Color.pink);
-            g2.fillRect(x, y + TRANSACTION_SETTLEMENT_RECT_HEIGHT, TRANSACTION_SETTLEMENT_RECT_WIDTH, EXCHANGE_ORDER_RECT_HEIGHT);
-
-            g2.setColor(Color.black);
-            g2.drawString(String.format("x%s", ts.getQuantity()), x + TEXT_PADDING_LEFT, y + TRANSACTION_SETTLEMENT_RECT_HEIGHT + EXCHANGE_ORDER_RECT_HEIGHT / 3);
-            g2.drawString(String.format("%s$", ts.getUnitPrice()), x + TEXT_PADDING_LEFT, y + TRANSACTION_SETTLEMENT_RECT_HEIGHT + EXCHANGE_ORDER_RECT_HEIGHT * 2 / 3);
-
-            x += TRANSACTION_SETTLEMENT_RECT_WIDTH + QUEUE_HORIZONTAL_GAP;
-        }
-    }
-
-    private void drawCancelledOrders(Queue<OrderSubmitter> cancelledOrders, Graphics2D g2, int y) {
-        int x = PADDING_LEFT;
-        for (OrderSubmitter os : cancelledOrders) {
-            g2.setColor(Color.red);
-            g2.fillRect(x, y, ORDER_SUBMITTER_RECT_WIDTH, ORDER_SUBMITTER_RECT_HEIGHT);
-
-            g2.setColor(Color.black);
-            g2.drawString(os.getSubmitterName(), x + TEXT_PADDING_LEFT, y + ORDER_SUBMITTER_RECT_HEIGHT / 3);
-            g2.drawString(shortenedSubmitterBrokerString(os), x + TEXT_PADDING_LEFT, y + ORDER_SUBMITTER_RECT_HEIGHT * 2 / 3);
-
-            x += ORDER_SUBMITTER_RECT_WIDTH + QUEUE_HORIZONTAL_GAP;
-        }
-    }
-
-    private String shortenedSubmitterBrokerString(OrderSubmitter os) {
-        if (os.getSubmitterBroker().length() <= Math.max(os.getSubmitterName().length(), 3)) {
-            return os.getSubmitterBroker();
-        }
-
-        return os.getSubmitterBroker().substring(os.getSubmitterName().length() - 3) + "...";
-    }
-
-    private void drawExchangeOrder(ExchangeOrder eo, Graphics2D g2, int x, int y) {
         g2.setColor(Color.pink);
-        g2.fillRect(x, y, EXCHANGE_ORDER_RECT_WIDTH, EXCHANGE_ORDER_RECT_HEIGHT);
+        g2.fillRect(startX, startY, cellSize, cellSize);
 
-        g2.setColor(Color.black);
-        g2.drawString(String.format("x%s", eo.getQuantity()), x + TEXT_PADDING_LEFT, y + EXCHANGE_ORDER_RECT_HEIGHT / 3);
-        g2.drawString(String.format("%s$", eo.getPrice()), x + TEXT_PADDING_LEFT, y + EXCHANGE_ORDER_RECT_HEIGHT * 2 / 3);
+        g2.setColor(buy ? Color.cyan : Color.green);
+        g2.fillRect(startX, startY, ACTION_INDICATOR_WIDTH, ACTION_INDICATOR_HEIGHT);
+
+        if (limit) {
+            g2.setColor(Color.black);
+            g2.fillRect(startX + ACTION_INDICATOR_WIDTH,
+                    startY,
+                    cellSize - ACTION_INDICATOR_WIDTH,
+                    ACTION_INDICATOR_HEIGHT);
+        }
+
+        List<String> records = new ArrayList<>();
+        records.add(String.format("x%s", item.getQuantity()));
+        records.add(String.format("%s$", item.getPrice()));
+
+        Layout.drawList(g2,
+                records,
+                startX,
+                startY,
+                startY + cellSize,
+                Constants.SMALL_FONT_SIZE,
+                Color.black);
     }
 
-    private void drawActivationPrice(double activationPrice, Graphics2D g2, int x, int y) {
-        g2.setColor(Color.cyan);
-        g2.fillRect(x, y, ACTIVATION_PRICE_RECT_WIDTH, ACTIVATION_PRICE_RECT_HEIGHT);
+    private void drawAwaitingExchangeOrder(Layout.DrawParameters<AwaitingExchangeOrder> drawParameters, boolean buy) {
+        Graphics2D g2 = drawParameters.g2();
+        AwaitingExchangeOrder item = drawParameters.item();
+        int startX = (int)drawParameters.startX();
+        int startY = (int)drawParameters.startY();
+        int cellSize = (int)drawParameters.cellSize();
 
-        g2.setColor(Color.black);
-        g2.drawString(Double.toString(activationPrice), x + TEXT_PADDING_LEFT, y + ACTIVATION_PRICE_RECT_HEIGHT / 2);
+        g2.setColor(Color.pink);
+        g2.fillRect(startX, startY, cellSize, EXCHANGE_ORDER_RECT_HEIGHT);
+
+        g2.setColor(buy ? Color.cyan : Color.green);
+        g2.fillRect(startX, startY, ACTION_INDICATOR_WIDTH, ACTION_INDICATOR_HEIGHT);
+
+        List<String> exchangeOrderRecords = new ArrayList<>();
+        exchangeOrderRecords.add(String.format("x%s", item.getActivatedOrder().getQuantity()));
+        exchangeOrderRecords.add(String.format("%s$", item.getActivatedOrder().getPrice()));
+
+        Layout.drawList(g2,
+                exchangeOrderRecords,
+                startX,
+                startY,
+                startY + EXCHANGE_ORDER_RECT_HEIGHT,
+                Constants.SMALL_FONT_SIZE,
+                Color.black);
+
+        g2.setColor(Color.cyan);
+        g2.fillRect(startX, startY + EXCHANGE_ORDER_RECT_HEIGHT, cellSize, cellSize - EXCHANGE_ORDER_RECT_HEIGHT);
+
+        Layout.drawList(g2,
+                new ArrayList<>(Collections.singletonList(Double.toString(item.getActivationPrice()))),
+                0,
+                startY + EXCHANGE_ORDER_RECT_HEIGHT,
+                startY + cellSize,
+                Constants.SMALL_FONT_SIZE,
+                Color.black);
+    }
+
+    private void drawTransactionSettlement(Layout.DrawParameters<TransactionSettlement> drawParameters) {
+        Graphics2D g2 = drawParameters.g2();
+        TransactionSettlement item = drawParameters.item();
+        int startX = (int)drawParameters.startX();
+        int startY = (int)drawParameters.startY();
+        int cellSize = (int)drawParameters.cellSize();
+
+        g2.setColor(Color.darkGray);
+        g2.fillRect(startX, startY, cellSize, cellSize - EXCHANGE_ORDER_RECT_HEIGHT);
+
+        List<String> transactionSettlementRecords = new ArrayList<>();
+        transactionSettlementRecords.add(String.format("%s$ to pay, %s$ to withdraw", item.getToPay(), item.getToWithdraw()));
+        transactionSettlementRecords.add(String.format("%s bought, %s sold", item.getBoughtStock(), item.getSoldStock()));
+
+        Layout.drawList(g2,
+                transactionSettlementRecords,
+                startX,
+                startY,
+                startY + cellSize - EXCHANGE_ORDER_RECT_HEIGHT,
+                Constants.SMALL_FONT_SIZE,
+                Color.white);
+
+        g2.setColor(Color.pink);
+        g2.fillRect(startX, startY + cellSize - EXCHANGE_ORDER_RECT_HEIGHT, cellSize, EXCHANGE_ORDER_RECT_HEIGHT);
+
+        List<String> exchangeOrderRecords = new ArrayList<>();
+        exchangeOrderRecords.add(String.format("x%s", item.getQuantity()));
+        exchangeOrderRecords.add(String.format("%s$", item.getUnitPrice()));
+
+        Layout.drawList(g2,
+                exchangeOrderRecords,
+                startX,
+                startY + cellSize - EXCHANGE_ORDER_RECT_HEIGHT,
+                startY + cellSize,
+                Constants.SMALL_FONT_SIZE,
+                Color.black);
+    }
+
+    private void drawCancelledOrder(Layout.DrawParameters<OrderSubmitter> drawParameters) {
+        Graphics2D g2 = drawParameters.g2();
+        OrderSubmitter item = drawParameters.item();
+        int startX = (int)drawParameters.startX();
+        int startY = (int)drawParameters.startY();
+        int cellSize = (int)drawParameters.cellSize();
+
+        g2.setColor(Color.red);
+        g2.fillRect(startX, startY, cellSize, cellSize);
+
+        List<String> orderSubmitterRecords = new ArrayList<>();
+        orderSubmitterRecords.add(StringUtils.hideString(item.getSubmitterName(), 10));
+        orderSubmitterRecords.add(StringUtils.hideString(item.getSubmitterBroker(), 10));
+        Layout.drawList(g2,
+                orderSubmitterRecords,
+                startX,
+                startY,
+                startY + cellSize,
+                Constants.SMALL_FONT_SIZE,
+                Color.black);
     }
 }

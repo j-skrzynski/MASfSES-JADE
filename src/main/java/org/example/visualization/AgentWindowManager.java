@@ -3,6 +3,7 @@ package org.example.visualization;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class AgentWindowManager {
     private final List<AgentWindow> agentWindows;
@@ -26,13 +27,17 @@ public class AgentWindowManager {
         return agentWindows;
     }
 
-    public void addAgentWindow(String agentName, Object initialValue) {
+    public void addAgentWindow(String agentName, Object initialValue, Consumer<AgentWindow> postAdd) {
         SwingUtilities.invokeLater(() -> {
             if (agentWindows.stream().anyMatch(aw -> aw.getName() == agentName)) {
                 System.out.printf("Agent window %s is not added because window with such name already exists%n", agentName);
             }
             else {
-                agentWindows.add(new AgentWindow(agentName, initialValue));
+                AgentWindow newAgentWindow = new AgentWindow(agentName, initialValue);
+                agentWindows.add(newAgentWindow);
+                if (postAdd != null) {
+                    postAdd.accept(newAgentWindow);
+                }
             }
         });
     }

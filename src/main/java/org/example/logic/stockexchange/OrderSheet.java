@@ -85,7 +85,8 @@ public class OrderSheet {
                     new LinkedList<>(orderSheet.getAwaitingActivationBuy()),
                     new LinkedList<>(orderSheet.getAwaitingActivationSell()),
                     new LinkedList<>(orderSheet.getSettlementsToSend()),
-                    new LinkedList<>(orderSheet.getCanceledOrders()));
+                    new LinkedList<>(orderSheet.getCanceledOrders()),
+                    new LinkedList<>(orderSheet.getPriceTracker().getHistory()));
         }
     }
 
@@ -118,7 +119,7 @@ public class OrderSheet {
         this.symbol = symbol;
 
         exchangeWindow = AgentWindowManager.getInstance().getAgentWindows().stream()
-                .filter(aw -> aw.getName() == exchangeName)
+                .filter(aw -> Objects.equals(aw.getName(), exchangeName))
                 .findFirst()
                 .orElse(null);
 
@@ -155,6 +156,10 @@ public class OrderSheet {
 
     public ListenableQueue<OrderSubmitter> getCanceledOrders() {
         return canceledOrders;
+    }
+
+    public PriceTracker getPriceTracker() {
+        return priceTracker;
     }
 
     public StockSymbol getSymbol() {

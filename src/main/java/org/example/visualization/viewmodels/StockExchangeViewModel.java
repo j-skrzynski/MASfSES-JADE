@@ -1,17 +1,12 @@
 package org.example.visualization.viewmodels;
 
 import org.example.logic.stockexchange.order.awaitingorder.AwaitingExchangeOrder;
-import org.example.logic.stockexchange.order.awaitingorder.AwaitingExchangeOrderComparatorAscending;
-import org.example.logic.stockexchange.order.awaitingorder.AwaitingExchangeOrderComparatorDescending;
 import org.example.logic.stockexchange.order.marketorder.ExchangeOrder;
-import org.example.logic.stockexchange.order.marketorder.OrderComparatorAscending;
-import org.example.logic.stockexchange.order.marketorder.OrderComparatorDescending;
 import org.example.logic.stockexchange.settlements.TransactionSettlement;
 import org.example.logic.stockexchange.utils.OrderSubmitter;
+import org.glassfish.pfl.basic.contain.Pair;
 
-import java.util.LinkedList;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import java.util.*;
 
 public class StockExchangeViewModel implements Comparable<StockExchangeViewModel> {
     private final Queue<ExchangeOrder> buyOrders;
@@ -22,6 +17,7 @@ public class StockExchangeViewModel implements Comparable<StockExchangeViewModel
     private final Queue<AwaitingExchangeOrder> awaitingActivationSell;
     private final Queue<TransactionSettlement> settlementsToSend;
     private final Queue<OrderSubmitter> canceledOrders;
+    private final List<Pair<Double, Long>> history;
 
     public StockExchangeViewModel(Queue<ExchangeOrder> buyOrders,
                                   Queue<ExchangeOrder> sellOrders,
@@ -30,7 +26,8 @@ public class StockExchangeViewModel implements Comparable<StockExchangeViewModel
                                   Queue<AwaitingExchangeOrder> awaitingActivationBuy,
                                   Queue<AwaitingExchangeOrder> awaitingActivationSell,
                                   Queue<TransactionSettlement> settlementsToSend,
-                                  Queue<OrderSubmitter> canceledOrders) {
+                                  Queue<OrderSubmitter> canceledOrders,
+                                  List<Pair<Double, Long>> history) {
         this.buyOrders = buyOrders;
         this.sellOrders = sellOrders;
         this.noLimitBuy = noLimitBuy;
@@ -39,6 +36,7 @@ public class StockExchangeViewModel implements Comparable<StockExchangeViewModel
         this.awaitingActivationSell = awaitingActivationSell;
         this.settlementsToSend = settlementsToSend;
         this.canceledOrders = canceledOrders;
+        this.history = history;
     }
 
     public StockExchangeViewModel() {
@@ -49,7 +47,8 @@ public class StockExchangeViewModel implements Comparable<StockExchangeViewModel
                 new LinkedList<>() {},
                 new LinkedList<>() {},
                 new LinkedList<>() {},
-                new LinkedList<>() {});
+                new LinkedList<>() {},
+                new ArrayList<>() {});
     }
 
     public Queue<ExchangeOrder> getBuyOrders() {
@@ -84,6 +83,10 @@ public class StockExchangeViewModel implements Comparable<StockExchangeViewModel
         return canceledOrders;
     }
 
+    public List<Pair<Double, Long>> getHistory() {
+        return history;
+    }
+
     @Override
     public int compareTo(StockExchangeViewModel otherModel) {
         if (otherModel == null) {
@@ -97,7 +100,8 @@ public class StockExchangeViewModel implements Comparable<StockExchangeViewModel
                 awaitingActivationBuy.equals(otherModel.getAwaitingActivationBuy()) &&
                 awaitingActivationSell.equals(otherModel.getAwaitingActivationSell()) &&
                 settlementsToSend.equals(otherModel.getSettlementsToSend()) &&
-                canceledOrders.size() == otherModel.getCanceledOrders().size()) {
+                canceledOrders.size() == otherModel.getCanceledOrders().size() &&
+                history.size() == otherModel.getHistory().size()) {
             return 0;
         }
 
