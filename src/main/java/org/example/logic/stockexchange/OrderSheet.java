@@ -63,30 +63,12 @@ public class OrderSheet {
     private record DefaultVisualizationListener<E>(OrderSheet orderSheet) implements QueueEventListener<E> {
         @Override
         public void onAdd(E element) {
-            update();
+            orderSheet.updateExchangeWindow();
         }
 
         @Override
         public void onRemove(E element) {
-            update();
-        }
-
-        private void update() {
-            if (orderSheet.getExchangeWindow() != null) {
-                orderSheet.getExchangeWindow().updateAndDraw(getViewModel());
-            }
-        }
-
-        private StockExchangeViewModel getViewModel() {
-            return new StockExchangeViewModel(new LinkedList<>(orderSheet.getBuyOrders()),
-                    new LinkedList<>(orderSheet.getSellOrders()),
-                    new LinkedList<>(orderSheet.getNoLimitBuy()),
-                    new LinkedList<>(orderSheet.getNoLimitSell()),
-                    new LinkedList<>(orderSheet.getAwaitingActivationBuy()),
-                    new LinkedList<>(orderSheet.getAwaitingActivationSell()),
-                    new LinkedList<>(orderSheet.getSettlementsToSend()),
-                    new LinkedList<>(orderSheet.getCanceledOrders()),
-                    new LinkedList<>(orderSheet.getPriceTracker().getHistory()));
+            orderSheet.updateExchangeWindow();
         }
     }
 
@@ -115,7 +97,7 @@ public class OrderSheet {
         canceledOrders = new ListenableQueue<>(new LinkedList<OrderSubmitter>())
                 .addListener(new DefaultVisualizationListener<>(this));
 
-        priceTracker = new PriceTracker(symbol,exchangeName);
+        priceTracker = new PriceTracker(symbol, exchangeName);
         this.symbol = symbol;
 
         exchangeWindow = AgentWindowManager.getInstance().getAgentWindows().stream()
@@ -124,42 +106,6 @@ public class OrderSheet {
                 .orElse(null);
 
         lastId = ExchangeOrderingID.getZero();
-    }
-
-    public ListenableQueue<ExchangeOrder> getBuyOrders() {
-        return buyOrders;
-    }
-
-    public ListenableQueue<ExchangeOrder> getSellOrders() {
-        return sellOrders;
-    }
-
-    public ListenableQueue<ExchangeOrder> getNoLimitBuy() {
-        return noLimitBuy;
-    }
-
-    public ListenableQueue<ExchangeOrder> getNoLimitSell() {
-        return noLimitSell;
-    }
-
-    public ListenableQueue<AwaitingExchangeOrder> getAwaitingActivationBuy() {
-        return awaitingActivationBuy;
-    }
-
-    public ListenableQueue<AwaitingExchangeOrder> getAwaitingActivationSell() {
-        return awaitingActivationSell;
-    }
-
-    public ListenableQueue<TransactionSettlement> getSettlementsToSend() {
-        return settlementsToSend;
-    }
-
-    public ListenableQueue<OrderSubmitter> getCanceledOrders() {
-        return canceledOrders;
-    }
-
-    public PriceTracker getPriceTracker() {
-        return priceTracker;
     }
 
     public StockSymbol getSymbol() {
@@ -183,6 +129,8 @@ public class OrderSheet {
                 buyerSettlement.getAddressee(),
                 sellerSettlement.getAddressee()
         );
+
+        updateExchangeWindow();
     }
 
     private Double getReferencePrice() {
@@ -495,5 +443,23 @@ public class OrderSheet {
 
     public OrderSubmitter popNextCancellation() {
         return canceledOrders.poll();
+    }
+
+    public void updateExchangeWindow() {
+        if (exchangeWindow != null) {
+            exchangeWindow.updateAndDraw(getViewModel());
+        }
+    }
+
+    private StockExchangeViewModel getViewModel() {
+        return new StockExchangeViewModel(new LinkedList<>(buyOrders),
+                new LinkedList<>(sellOrders),
+                new LinkedList<>(noLimitBuy),
+                new LinkedList<>(noLimitSell),
+                new LinkedList<>(awaitingActivationBuy),
+                new LinkedList<>(awaitingActivationSell),
+                new LinkedList<>(settlementsToSend),
+                new LinkedList<>(canceledOrders),
+                new LinkedList<>(priceTracker.getHistory()));
     }
 }
