@@ -141,10 +141,17 @@ public class StockExchange {
     }
 
     public void advanceExchangeDateBySession(){
+        this.baseline.advance();
         this.currentSessionStart = currentSessionStart.getNexSessionDate();
         this.millisecondsSinceStart = 0L;
         this.expirationUpdate();
         this.loadArtificialData();
+        for (OrderSheet orderSheet : orderSheets.values()) {
+            orderSheet.setSessionNumber(currentSessionStart.getSessionId());
+            orderSheet.setSeconds(currentSessionStart.getMilliseconds());
+        }
+
+        System.out.println("New session: "+currentSessionStart.getNexSessionDate().getSessionId().toString());
     }
 
     public void loadArtificialData(){
@@ -162,6 +169,7 @@ public class StockExchange {
                 sheet.placeDisposition(new ExchangeOrder(sheet.getSymbol(), OrderType.SELL, currentSessionStart.getNexSessionDate(), rec.price()*1.005, rec.quantity(), new OrderSubmitter("Env", new AID("imaginaryBroker", false), "")));
                 sheet.placeDisposition(new ExchangeOrder(sheet.getSymbol(), OrderType.BUY, currentSessionStart.getNexSessionDate(), rec.price()*0.995, rec.quantity(), new OrderSubmitter("Env", new AID("imaginaryBroker", false), "")));
                 sheet.getPriceTracker().submitArtificialData(rec.price());
+                System.out.println("env: sell "+rec.price()*1.005 + " buy "+ rec.price()*0.995);
             }
             else
                 sheet.placeDisposition(new ExchangeOrder(sheet.getSymbol(), OrderType.SELL, currentSessionStart.getNexSessionDate(), rec.price(), rec.quantity(), new OrderSubmitter("Env", new AID("imaginaryBroker", false), "")));
@@ -197,6 +205,9 @@ public class StockExchange {
 
     public void addMillisecondsSinceStart(Long millisecondsSinceStart) {
         this.millisecondsSinceStart += millisecondsSinceStart;
+        for (OrderSheet orderSheet : orderSheets.values()) {
+            orderSheet.setSeconds(this.millisecondsSinceStart);
+        }
     }
 
     public Long getMillisecondsSinceStart() {

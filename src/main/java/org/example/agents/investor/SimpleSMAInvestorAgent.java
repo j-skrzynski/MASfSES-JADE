@@ -2,6 +2,7 @@ package org.example.agents.investor;
 
 import jade.core.AID;
 import jade.core.behaviours.TickerBehaviour;
+import jade.core.behaviours.WakerBehaviour;
 import org.example.datamodels.order.OrderType;
 
 import java.util.*;
@@ -23,10 +24,17 @@ public class SimpleSMAInvestorAgent extends InvestorAgent {
     @Override
     protected void setup() {
         super.setup();
-        this.addBehaviour(new TickerBehaviour(this, 5000) {
+
+
+        this.addBehaviour(new WakerBehaviour(this, 0) { // Opóźnienie 3000 ms
             @Override
-            protected void onTick() {
-                makeDecision();
+            protected void onWake() {
+                this.getAgent().addBehaviour(new TickerBehaviour(this.getAgent(), 1000) {
+                    @Override
+                    protected void onTick() {
+                        makeDecision();
+                    }
+                });
             }
         });
     }
@@ -44,7 +52,7 @@ public class SimpleSMAInvestorAgent extends InvestorAgent {
 
             if (priceHistory.get(stock).size() > 5) {
                 List<Double> history = priceHistory.get(stock);
-                Double averagePrice = history.stream().mapToDouble(d -> d).average().orElse(0.0);
+                Double averagePrice = history.stream().filter(Objects::nonNull).mapToDouble(d -> d).average().orElse(0.0);
                 Double lastTrend = lastPrice - averagePrice;
 
                 Double brokerBalance = getBalance("Broker1");
@@ -54,7 +62,7 @@ public class SimpleSMAInvestorAgent extends InvestorAgent {
 
                 // Strategia: Kup, gdy cena jest poniżej średniej i mamy wystarczająco dużo gotówki
                 if (buyPrice != null && buyPrice - averagePrice < 0 && brokerBalance + moneyBalance >= buyPrice) {
-                    Long quantity = (long) ((brokerBalance + moneyBalance / 2) / buyPrice);
+                    Long quantity = (long) (((brokerBalance + moneyBalance) * 0.5) / buyPrice);
                     if (brokerBalance < buyPrice*1.05 * quantity) {
                         depositMoney("Broker1", buyPrice*1.05 * quantity - brokerBalance);
                     }

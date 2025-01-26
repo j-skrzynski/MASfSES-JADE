@@ -24,8 +24,10 @@ public class OrderSheet {
     private static final Logger logger = Logger.getLogger(OrderSheet.class.getName());
     static{
         ConsoleHandler consoleHandler = new ConsoleHandler();
-        consoleHandler.setLevel(Level.INFO); // Log messages at INFO level or higher
+        consoleHandler.setLevel(Level.OFF); // Log messages at INFO level or higher
         logger.addHandler(consoleHandler);
+        logger.setUseParentHandlers(false);
+
         try {
             FileHandler fileHandler = new FileHandler("orders.log", true); // Append to the log file
             fileHandler.setFormatter(new SimpleFormatter()); // Add a simple text formatter
@@ -61,6 +63,18 @@ public class OrderSheet {
 
     private ExchangeOrderingID lastId;
 
+
+    private Long sessionNumber;
+    private Long seconds;
+
+    public void setSessionNumber(Long sessionNumber) {
+        this.sessionNumber = sessionNumber;
+    }
+
+    public void setSeconds(Long seconds) {
+        this.seconds = seconds;
+    }
+
     public OrderSheet(StockSymbol symbol, String exchangeName) {
         buyOrders = new PriorityQueue<>(new OrderComparatorDescending()); // da najwięcej --- da najmniej  > descending
         sellOrders = new PriorityQueue<>(new OrderComparatorAscending());// najtańsze --- najdroższe  > ascending
@@ -85,7 +99,7 @@ public class OrderSheet {
         if(buyerSettlement.getQuantity() != sellerSettlement.getQuantity() || !buyerSettlement.getUnitPrice().equals(sellerSettlement.getUnitPrice())){
             throw new RuntimeException("Buyer/Seller settlement does not match");
         }
-        this.priceTracker.submitData(buyerSettlement.getUnitPrice(), buyerSettlement.getQuantity(),buyerSettlement.getAddressee(),sellerSettlement.getAddressee());
+        this.priceTracker.submitData(buyerSettlement.getUnitPrice(), buyerSettlement.getQuantity(),buyerSettlement.getAddressee(),sellerSettlement.getAddressee(), this.sessionNumber, this.seconds);
     }
 
     private Double getReferencePrice(){

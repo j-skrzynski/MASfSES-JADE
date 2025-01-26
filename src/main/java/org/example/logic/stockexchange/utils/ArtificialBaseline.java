@@ -12,7 +12,7 @@ public class ArtificialBaseline  {
     public EnvRecord getNextEnvRec(String shortName){
         if(baseline.containsKey(shortName)){
             if(baseline.get(shortName).size()>0) {
-                return baseline.get(shortName).poll();
+                return baseline.get(shortName).peek();
             }
         }
         return null;
@@ -22,5 +22,10 @@ public class ArtificialBaseline  {
     }
     public void setBaseline(HashMap<String, Queue<EnvRecord>> baseline) {
         this.baseline = baseline;
+    }
+    public void advance(){
+        for(Queue<EnvRecord> q:this.baseline.values()){
+            q.poll();
+        }
     }
 }

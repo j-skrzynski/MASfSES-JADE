@@ -84,7 +84,7 @@ public class PriceCheckerBehaviour extends TickerBehaviour {
             myAgent.send(request);
 
             // Oczekiwanie na odpowiedź
-            ACLMessage reply = myAgent.blockingReceive(MessageTemplate.MatchInReplyTo(rid), 5000);
+            ACLMessage reply = myAgent.blockingReceive(MessageTemplate.MatchInReplyTo(rid), 1000);
             if (reply != null) {
                 String content = reply.getContent();
                 Double price = extractPriceFromJson(content);
@@ -108,7 +108,7 @@ public class PriceCheckerBehaviour extends TickerBehaviour {
             myAgent.send(request);
 
             // Oczekiwanie na odpowiedź
-            ACLMessage reply = myAgent.blockingReceive(MessageTemplate.MatchInReplyTo(rid), 5000);
+            ACLMessage reply = myAgent.blockingReceive(MessageTemplate.MatchInReplyTo(rid), 1000);
             if (reply != null) {
                 String content = reply.getContent();
                 Double price = extractPriceFromJson(content);

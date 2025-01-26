@@ -36,14 +36,14 @@ public class PriceTracker {
         this.exchangeName = exchangeName;
     }
 
-    private void logTransaction(Double price, Long quantity, String buyer, String seller){
-        logger.info("["+exchangeName+"]["+symbol.getShortName()+"] "+seller+" sold "+Long.toString(quantity)+" to "+buyer+" unit_price "+price.toString() );
+    private void logTransaction(Double price, Long quantity, String buyer, String seller, Long sessionNumber, Long seconds){
+        logger.info("["+exchangeName+"]["+symbol.getShortName()+"] "+seller+" sold "+Long.toString(quantity)+" to "+buyer+" unit_price "+price.toString() + " session "+Long.toString(sessionNumber) +"@"+Long.toString(seconds));
     }
 
-    public void submitData(Double price, Long quantity,OrderSubmitter buyer, OrderSubmitter seller){
+    public void submitData(Double price, Long quantity,OrderSubmitter buyer, OrderSubmitter seller, Long sessionNumber, Long seconds){
         history.add(new Pair<>(price,quantity));
         lastPrice = price;
-        logTransaction(price,quantity,buyer.getLogName(),seller.getLogName());
+        logTransaction(price,quantity,buyer.getLogName(),seller.getLogName(),sessionNumber,seconds);
         StockPriceDictionary.addPrice(symbol.getShortName(), exchangeName,price);
     }
 

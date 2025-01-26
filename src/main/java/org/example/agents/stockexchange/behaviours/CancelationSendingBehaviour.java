@@ -19,8 +19,10 @@ public class CancelationSendingBehaviour extends TickerBehaviour {
     private static final Logger logger = Logger.getLogger(CancelationSendingBehaviour.class.getName());
     static{
         ConsoleHandler consoleHandler = new ConsoleHandler();
-        consoleHandler.setLevel(Level.INFO); // Log messages at INFO level or higher
+        consoleHandler.setLevel(Level.OFF); // Log messages at INFO level or higher
         logger.addHandler(consoleHandler);
+        logger.setUseParentHandlers(false);
+
         try {
             FileHandler fileHandler = new FileHandler("canceledtransactions.log", true); // Append to the log file
             fileHandler.setFormatter(new SimpleFormatter()); // Add a simple text formatter

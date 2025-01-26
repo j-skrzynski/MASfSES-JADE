@@ -57,7 +57,7 @@ public class InvestorAgent extends Agent {
             registerObservedStock(stock);
         }
         this.moneyBalance = (Double) args[1];
-        this.addBehaviour(new PriceCheckerBehaviour(this, 5000L)); // checks prices every second
+        this.addBehaviour(new PriceCheckerBehaviour(this, 1000L)); // checks prices every second
         for (String broker : supportedBrokers) {
             this.registerInBroker(broker);
         }
@@ -106,6 +106,7 @@ public class InvestorAgent extends Agent {
     protected void depositMoney(String broker, double amount){
         BrokerCommandFactory bcf = new BrokerCommandFactory("", traderName);
         sendMessageToBroker(getBrokerAID(broker), bcf.deposit(amount).getJsonCommand(),"");
+        this.moneyBalance -= amount;
     }
     protected void withdrawMoney(String broker, double amount){
         BrokerCommandFactory bcf = new BrokerCommandFactory("", traderName);

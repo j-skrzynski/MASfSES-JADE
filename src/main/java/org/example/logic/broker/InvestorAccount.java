@@ -97,7 +97,10 @@ public class InvestorAccount {
         orderRecord.soldStock(tr.soldStock());
         orderRecord.boughtStock(tr.boughtStock());
         this.addStockToWallet(orderRecord.getStockSymbol(), tr.boughtStock());
-
+        this.balance+=tr.toWithdraw();
+        if(orderRecord.getAmountOfStockToBeSold() == 0 && orderRecord.getAmountOfStockToBeBought() == 0){
+            this.cancelOrder(orderId);
+        }
     }
 
     public void cancelOrder(String orderId){
