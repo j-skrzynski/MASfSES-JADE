@@ -11,7 +11,6 @@ import java.util.Objects;
  * Every time transaction is finished this class should be emitted for seller and buyer
  */
 public class TransactionSettlement {
-    private final Gson gson = new Gson();
     private final OrderSubmitter addressee;
     private final Double toPay;
     private final Double toWithdraw;
@@ -75,6 +74,8 @@ public class TransactionSettlement {
     }
 
     public String toJson() {
+        Gson gson = new Gson();
+
         return gson.toJson(this);
     }
 
@@ -87,6 +88,7 @@ public class TransactionSettlement {
                 this.symbol.getShortName(),
                 this.addressee.getBrokerOrderId()
         );
+        Gson gson = new Gson();
         return gson.toJson(tr);
     }
 

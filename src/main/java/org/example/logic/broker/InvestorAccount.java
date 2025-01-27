@@ -175,8 +175,7 @@ public class InvestorAccount {
 
     private void updateWindow() {
         if (window != null) {
-            if (balanceHistory.isEmpty() && balance > 0 ||
-                    !balanceHistory.isEmpty() && !Objects.equals(balanceHistory.getLast(), balance)) {
+            if (balance > 0 && (balanceHistory.isEmpty() || !Objects.equals(balanceHistory.getLast(), balance))) {
                 balanceHistory.add(balance);
             }
 

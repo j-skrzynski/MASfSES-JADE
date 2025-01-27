@@ -184,7 +184,7 @@ public class StockExchangeWindowPanel extends BaseWindowPanel<StockExchangeViewM
 
         List<String> records = new ArrayList<>();
         records.add(String.format("x%s", item.getQuantity()));
-        records.add(String.format("%s$", item.getPrice()));
+        records.add(StringUtils.hideString(String.format("%s$", item.getPrice()), Constants.FLOAT_TEXT_MAX_LENGTH));
 
         Layout.drawList(g2,
                 records,
@@ -210,7 +210,7 @@ public class StockExchangeWindowPanel extends BaseWindowPanel<StockExchangeViewM
 
         List<String> exchangeOrderRecords = new ArrayList<>();
         exchangeOrderRecords.add(String.format("x%s", item.getActivatedOrder().getQuantity()));
-        exchangeOrderRecords.add(String.format("%s$", item.getActivatedOrder().getPrice()));
+        exchangeOrderRecords.add(StringUtils.hideString(String.format("%s$", item.getActivatedOrder().getPrice()), Constants.FLOAT_TEXT_MAX_LENGTH));
 
         Layout.drawList(g2,
                 exchangeOrderRecords,
@@ -224,7 +224,7 @@ public class StockExchangeWindowPanel extends BaseWindowPanel<StockExchangeViewM
         g2.fillRect(startX, startY + EXCHANGE_ORDER_RECT_HEIGHT, cellSize, cellSize - EXCHANGE_ORDER_RECT_HEIGHT);
 
         Layout.drawList(g2,
-                new ArrayList<>(Collections.singletonList(Double.toString(item.getActivationPrice()))),
+                new ArrayList<>(Collections.singletonList(StringUtils.hideString(Double.toString(item.getActivationPrice()), Constants.FLOAT_TEXT_MAX_LENGTH))),
                 0,
                 startY + EXCHANGE_ORDER_RECT_HEIGHT,
                 startY + cellSize,
@@ -243,7 +243,10 @@ public class StockExchangeWindowPanel extends BaseWindowPanel<StockExchangeViewM
         g2.fillRect(startX, startY, cellSize, cellSize - EXCHANGE_ORDER_RECT_HEIGHT);
 
         List<String> transactionSettlementRecords = new ArrayList<>();
-        transactionSettlementRecords.add(String.format("%s$ to pay, %s$ to withdraw", item.getToPay(), item.getToWithdraw()));
+        String getToPayString = StringUtils.hideString(Double.toString(item.getToPay()), Constants.FLOAT_TEXT_MAX_LENGTH);
+        String getToWithdrawString = StringUtils.hideString(Double.toString(item.getToWithdraw()), Constants.FLOAT_TEXT_MAX_LENGTH);
+
+        transactionSettlementRecords.add(String.format("%s$ to pay, %s$ to withdraw", getToPayString, getToWithdrawString));
         transactionSettlementRecords.add(String.format("%s bought, %s sold", item.getBoughtStock(), item.getSoldStock()));
 
         Layout.drawList(g2,
@@ -259,7 +262,7 @@ public class StockExchangeWindowPanel extends BaseWindowPanel<StockExchangeViewM
 
         List<String> exchangeOrderRecords = new ArrayList<>();
         exchangeOrderRecords.add(String.format("x%s", item.getQuantity()));
-        exchangeOrderRecords.add(String.format("%s$", item.getUnitPrice()));
+        exchangeOrderRecords.add(StringUtils.hideString(String.format("%s$", item.getUnitPrice()), Constants.FLOAT_TEXT_MAX_LENGTH));
 
         Layout.drawList(g2,
                 exchangeOrderRecords,
