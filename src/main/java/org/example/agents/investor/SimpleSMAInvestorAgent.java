@@ -62,7 +62,7 @@ public class SimpleSMAInvestorAgent extends InvestorAgent {
 
                 // Strategia: Kup, gdy cena jest poniżej średniej i mamy wystarczająco dużo gotówki
                 if (buyPrice != null && buyPrice - averagePrice < 0 && brokerBalance + moneyBalance >= buyPrice) {
-                    Long quantity = (long) (((brokerBalance + moneyBalance) * 0.5) / buyPrice);
+                    Long quantity = (long) (((brokerBalance + moneyBalance) * 0.1) / buyPrice);
                     if (brokerBalance < buyPrice*1.05 * quantity) {
                         depositMoney("Broker1", buyPrice*1.05 * quantity - brokerBalance);
                     }
