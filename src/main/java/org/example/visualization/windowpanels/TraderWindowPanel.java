@@ -124,12 +124,26 @@ public class TraderWindowPanel extends BaseWindowPanel<TraderViewModel> {
         records.add(StringUtils.hideString(String.format("To sell: %s", item.getAmountOfStockToBeSold()), TEXT_LENGTH_CONSTRAINT));
         records.add(StringUtils.hideString(String.format("Locked: %s", item.getMoneyLocked()), TEXT_LENGTH_CONSTRAINT));
 
+        int fontSize;
+        if (cellSize > 60) {
+            fontSize = Constants.DEFAULT_FONT_SIZE;
+        }
+        else if (cellSize > 50) {
+            fontSize = Constants.SMALL_FONT_SIZE;
+        }
+        else if (cellSize > 30) {
+            fontSize = Constants.TINY_FONT_SIZE;
+        }
+        else {
+            fontSize = 0;
+        }
+
         Layout.drawList(g2,
                 records,
                 startX,
                 startY + ACTION_INDICATOR_HEIGHT,
                 startY + cellSize,
-                Constants.DEFAULT_FONT_SIZE,
+                fontSize,
                 Color.black);
     }
 }

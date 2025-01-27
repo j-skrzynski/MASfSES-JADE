@@ -9,6 +9,7 @@ public class StatisticalGraphics {
 
     private static final double AXIS_ARROW_ANGLE = Math.PI / 6;
     private static final double AXIS_ARROW_LENGTH = 10;
+    private static final double MIN_GAP_BETWEEN_DASHES = 10;
 
     public static void plot2D(Graphics2D g2,
                               Double[] y,
@@ -59,9 +60,14 @@ public class StatisticalGraphics {
         }
 
         int xAxisLength = endX - startX - alongArrowDelta;
+        double distanceBetweenDashes = xAxisLength / (y.length - 1.0);
+        int dashDrawFactor = (int)(MIN_GAP_BETWEEN_DASHES / distanceBetweenDashes) + 1;
+
         for (int i = 0; i < y.length; i++) {
-            int dashX = startX + i * xAxisLength / (y.length - 1);
-            g2.drawLine(dashX, originY + acrossArrowDelta, dashX, originY - acrossArrowDelta);
+            if (i % dashDrawFactor == 0) {
+                int dashX = (int)(startX + i * distanceBetweenDashes);
+                g2.drawLine(dashX, originY + acrossArrowDelta, dashX, originY - acrossArrowDelta);
+            }
         }
 
         int yAxisLength = endY - startY - alongArrowDelta;
