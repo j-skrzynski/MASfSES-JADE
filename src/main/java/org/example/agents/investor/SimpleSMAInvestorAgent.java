@@ -1,16 +1,18 @@
 package org.example.agents.investor;
 
-import jade.core.AID;
 import jade.core.behaviours.TickerBehaviour;
 import jade.core.behaviours.WakerBehaviour;
 import org.example.datamodels.order.OrderType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 
 public class SimpleSMAInvestorAgent extends InvestorAgent {
 
     // Przechowywanie historii cen, aby ocenić trendy
-    private HashMap<InvestorPriceRecordLabel, List<Double>> priceHistory;
+    private final HashMap<InvestorPriceRecordLabel, List<Double>> priceHistory;
 
     // Mapa przechowująca ilość posiadanych akcji dla każdego symbolu akcji
     private HashMap<InvestorPriceRecordLabel, Long> ownedStocks;

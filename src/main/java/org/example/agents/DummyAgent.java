@@ -2,9 +2,9 @@ package org.example.agents;
 
 import jade.core.AID;
 import jade.core.Agent;
-import jade.lang.acl.ACLMessage;
 import jade.core.behaviours.SequentialBehaviour;
 import jade.core.behaviours.WakerBehaviour;
+import jade.lang.acl.ACLMessage;
 import org.example.commandCreator.broker.BrokerCommandFactory;
 import org.example.datamodels.order.OrderType;
 
@@ -31,15 +31,15 @@ public class DummyAgent extends Agent {
                 "{\n" +
                         "\"command\": \"PLACE_ORDER\",\n" +
                         "\"arguments\": [{\n" +
-                        "\"order\": {\n" +
-                        "\"symbol\": {\"shortName\": \"AAPL\"},\n" +
-                        "\"orderType\": \"SELL\",\n" +
-                        "\"price\": 5.0,\n" +
-                        "\"quantity\": 500,\n" +
-                        "\"expirationSecpification\": \"D\"\n" +
-                        "},\n" +
-                        "\"awaiting\": false,\n" +
-                        "\"price\": 0.0\n" +
+                            "\"order\": {\n" +
+                                "\"symbol\": {\"shortName\": \"AAPL\"},\n" +
+                                "\"orderType\": \"SELL\",\n" +
+                                "\"price\": 5.0,\n" +
+                                "\"quantity\": 500,\n" +
+                                "\"expirationSecpification\": \"D\"\n" +
+                            "},\n" +
+                            "\"awaiting\": false,\n" +
+                            "\"price\": 0.0\n" +
                         "}],\n" +
                         "\"traderName\": \"JohnDoe\",\n" +
                         "\"brokerName\": \"XYZBroker\",\n" +
@@ -82,7 +82,12 @@ public class DummyAgent extends Agent {
         behaviour.addSubBehaviour(new WakerBehaviour(this, 500) { // Opóźnienie 5000 ms
             @Override
             protected void onWake() {
-                sendMessageToBroker(brokerAgent, bcf.marketOrder("AAPL", OrderType.BUY, 5.0, 1000L).expD().getJsonCommand());
+                sendMessageToBroker(brokerAgent, bcf.marketOrder(
+                        "AAPL",
+                        OrderType.BUY,
+                        5.0,
+                        1000L
+                ).expD().getJsonCommand());
             }
         });
 

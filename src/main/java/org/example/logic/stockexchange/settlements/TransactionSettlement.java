@@ -1,12 +1,14 @@
 package org.example.logic.stockexchange.settlements;
 
 import com.google.gson.Gson;
+import org.example.datamodels.StockSymbol;
 import org.example.datamodels.TransactionResult;
 import org.example.logic.stockexchange.utils.OrderSubmitter;
-import org.example.datamodels.StockSymbol;
+
+import java.util.Objects;
 
 /**
- * Every time transaction is finished this class should be emited for seller and buyer
+ * Every time transaction is finished this class should be emitted for seller and buyer
  */
 public class TransactionSettlement {
     private final OrderSubmitter addressee;
@@ -19,7 +21,16 @@ public class TransactionSettlement {
     private final Double unitPrice;
     private final Long quantity;
 
-    public TransactionSettlement(OrderSubmitter addressee, Double toPay, Double toWithdraw, StockSymbol symbol, Long soldStock, Long boughtStock, Double unitPrice, Long quantity) {
+    public TransactionSettlement(
+            OrderSubmitter addressee,
+            Double toPay,
+            Double toWithdraw,
+            StockSymbol symbol,
+            Long soldStock,
+            Long boughtStock,
+            Double unitPrice,
+            Long quantity
+    ) {
         this.addressee = addressee;
         this.toPay = toPay;
         this.toWithdraw = toWithdraw;
@@ -61,14 +72,37 @@ public class TransactionSettlement {
     public Long getQuantity() {
         return quantity;
     }
+
     public String toJson() {
         Gson gson = new Gson();
 
         return gson.toJson(this);
     }
-    public String getTransactionResult(){
-        TransactionResult tr = new TransactionResult(this.toPay,this.toWithdraw,this.soldStock,this.boughtStock,this.symbol.getShortName(),this.addressee.getBrokerOrderId());
+
+    public String getTransactionResult() {
+        TransactionResult tr = new TransactionResult(
+                this.toPay,
+                this.toWithdraw,
+                this.soldStock,
+                this.boughtStock,
+                this.symbol.getShortName(),
+                this.addressee.getBrokerOrderId()
+        );
         Gson gson = new Gson();
         return gson.toJson(tr);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof TransactionSettlement ts)) {
+            return false;
+        }
+
+        return Objects.equals(toPay, ts.getToPay()) &&
+                Objects.equals(toWithdraw, ts.getToWithdraw()) &&
+                Objects.equals(soldStock, ts.getSoldStock()) &&
+                Objects.equals(boughtStock, ts.getBoughtStock()) &&
+                Objects.equals(unitPrice, ts.getUnitPrice()) &&
+                Objects.equals(quantity, ts.getQuantity());
     }
 }

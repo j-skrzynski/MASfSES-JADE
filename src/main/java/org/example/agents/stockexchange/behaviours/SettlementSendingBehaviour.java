@@ -2,19 +2,19 @@ package org.example.agents.stockexchange.behaviours;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.example.agents.stockexchange.StockExchangeAgent;
-import org.example.logic.stockexchange.settlements.TransactionSettlement;
 import org.example.datamodels.StockSymbol;
+import org.example.logic.stockexchange.settlements.TransactionSettlement;
 
 import java.util.logging.*;
 
 public class SettlementSendingBehaviour extends TickerBehaviour {
     private static final Logger logger = Logger.getLogger(SettlementSendingBehaviour.class.getName());
-    static{
+
+    static {
         ConsoleHandler consoleHandler = new ConsoleHandler();
         consoleHandler.setLevel(Level.OFF); // Log messages at INFO level or higher
         logger.addHandler(consoleHandler);
@@ -30,7 +30,9 @@ public class SettlementSendingBehaviour extends TickerBehaviour {
 
     }
 
-    private StockExchangeAgent agent;
+    private final StockExchangeAgent agent;
+    private final Gson gson = new Gson();
+
     public SettlementSendingBehaviour(StockExchangeAgent a, long period) {
         super(a, period);
         agent = a;
@@ -48,17 +50,17 @@ public class SettlementSendingBehaviour extends TickerBehaviour {
 
             while (settlement != null) {
                 ACLMessage message = new ACLMessage(ACLMessage.INFORM);
-                logger.info("["+agent.getStockExchange().getName()+"] Sending "+settlement.toJson() + " to " + settlement.getAddressee().getBroker());
+                logger.info("[" + agent.getStockExchange().getName() + "] Sending " + settlement.toJson() +
+                        " to " + settlement.getAddressee().getBroker());
 
                 JsonObject commandObject = new JsonObject();
                 commandObject.addProperty("command", "SETTLEMENT");
                 commandObject.addProperty("exchangeName", agent.getStockExchange().getName());
                 commandObject.addProperty("traderName", settlement.getAddressee().getSubmitterName());
                 commandObject.addProperty("brokerOrderId", settlement.getAddressee().getBrokerOrderId());
-                Gson gson = new Gson();
                 JsonArray jsonArray = new JsonArray();
                 jsonArray.add(gson.toJsonTree(settlement.getTransactionResult()));
-                commandObject.add("arguments", jsonArray );
+                commandObject.add("arguments", jsonArray);
 
                 message.setContent(gson.toJson(commandObject));
                 message.addReceiver(settlement.getAddressee().getBroker());
@@ -70,4 +72,3 @@ public class SettlementSendingBehaviour extends TickerBehaviour {
         }
     }
 }
-

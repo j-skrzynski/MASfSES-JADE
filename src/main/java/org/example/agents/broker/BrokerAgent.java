@@ -3,16 +3,12 @@ package org.example.agents.broker;
 
 import com.google.gson.Gson;
 import jade.core.Agent;
-import jade.core.behaviours.CyclicBehaviour;
-import jade.lang.acl.ACLMessage;
 import org.example.agents.broker.behaviours.BrokerOrderProcessingBehaviour;
 import org.example.datamodels.TransactionResult;
-import org.example.datamodels.order.OrderType;
-import org.example.logic.broker.InvestorRequest;
 import org.example.logic.broker.StockBroker;
 
 public class BrokerAgent extends Agent {
-
+    private final Gson gson = new Gson();
     private StockBroker stockBroker;
 
     @Override
@@ -59,8 +55,6 @@ public class BrokerAgent extends Agent {
     }
 
     private TransactionResult parseTransactionResult(String json) {
-        Gson gson = new Gson();
-        TransactionResult result = gson.fromJson(json, TransactionResult.class);
-        return result;
+        return gson.fromJson(json, TransactionResult.class);
     }
 }

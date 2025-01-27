@@ -1,5 +1,6 @@
 package org.example.agents.stockexchange.behaviours;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import jade.core.AID;
@@ -12,24 +13,23 @@ import org.example.datamodels.command.CommandParser;
 import org.example.datamodels.order.AwaitingOrder;
 import org.example.datamodels.order.OrderExpirationType;
 import org.example.datamodels.order.OrderType;
+import org.example.logic.stockexchange.order.PlaceableDisposition;
 import org.example.logic.stockexchange.order.awaitingorder.AwaitingExchangeOrder;
-import org.example.logic.stockexchange.order.marketorder.NoLimitExchangeOrder;
 import org.example.logic.stockexchange.order.marketorder.ExchangeOrder;
-import org.example.logic.stockexchange.order.PlacableDisposition;
-import org.example.logic.stockexchange.utils.*;
-
-import com.google.gson.Gson;
+import org.example.logic.stockexchange.order.marketorder.NoLimitExchangeOrder;
+import org.example.logic.stockexchange.utils.ExchangeDate;
+import org.example.logic.stockexchange.utils.ExpirationDateCalculator;
+import org.example.logic.stockexchange.utils.OrderSubmitter;
 
 import java.util.List;
 
 public class OrderProcessingBehaviour extends CyclicBehaviour {
-    private StockExchangeAgent agent;
-    private Gson gson;
+    private final StockExchangeAgent agent;
+    private final Gson gson = new Gson();
 
     public OrderProcessingBehaviour(StockExchangeAgent agent) {
         super(agent);
         this.agent = agent;
-        this.gson = new Gson();
     }
 
     @Override
@@ -56,7 +56,7 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
         }
     }
 
-    private String handleRequest(String content, AID sender) throws Exception {
+    private String handleRequest(String content, AID sender) {
         CommandParser cp = new CommandParser();
         Command command = cp.parseCommand(content);
 
@@ -70,11 +70,11 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
             case "ADD_STOCK":
                 return handleAddStock(arguments);
             case "PLACE_ORDER":
-                Object orderSpec = arguments.get(0);
-                if(!(orderSpec instanceof AwaitingOrder)) {
-                   throw new IllegalArgumentException("PLACE_ORDER requires an AwaitingOrder");
+                Object orderSpec = arguments.getFirst();
+                if (!(orderSpec instanceof AwaitingOrder)) {
+                    throw new IllegalArgumentException("PLACE_ORDER requires an AwaitingOrder");
                 }
-                return processPlaceOrder((AwaitingOrder)orderSpec, sender, traderName, brokerName, brokerOrderId);
+                return processPlaceOrder((AwaitingOrder) orderSpec, sender, traderName, brokerName, brokerOrderId);
             case "ADVANCE_SESSION":
                 return advanceSession();
             case "GET_TOP_BUY":
@@ -100,38 +100,73 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
         return "Stock added: " + name;
     }
 
-    private String processPlaceOrder(AwaitingOrder orderSpec, AID sender, String traderName, String brokerName, String exchangeName) {
+    private String processPlaceOrder(
+            AwaitingOrder orderSpec,
+            AID sender,
+            String traderName,
+            String brokerName,
+            String exchangeName
+    ) {
 
         String orderCommand = orderSpec.getOrderCommand();
-        OrderType orderType = orderSpec.getOrder().getOrderType();
-        String expirationSpecification = orderSpec.getOrder().getExpirationSecpification();
-        String symbolShortName = orderSpec.getOrder().getSymbol().getShortName();
-        long quantity = orderSpec.getOrder().getQuantity();
+        OrderType orderType = orderSpec.order().getOrderType();
+        String expirationSpecification = orderSpec.order().getExpirationSpecification();
+        String symbolShortName = orderSpec.order().getSymbol().getShortName();
+        long quantity = orderSpec.order().getQuantity();
 
         StockSymbol symbol = agent.getStockExchange().getSymbolByShortName(symbolShortName);
         ExchangeDate expirationDate = processExpirationSpecification(expirationSpecification);
 
-        PlacableDisposition disposition = null;
+        double price = orderSpec.order().getPrice();
+        double activationPrice = orderSpec.price();
+
+        PlaceableDisposition disposition = null;
         switch (orderCommand) {
             case "LIMIT":
-                double price = orderSpec.getOrder().getPrice();
-                disposition = new ExchangeOrder(symbol, orderType, expirationDate, price, quantity,
-                        new OrderSubmitter(traderName, brokerName, sender, exchangeName));  // Zmieniony konstruktor
+                disposition = new ExchangeOrder(
+                        symbol,
+                        orderType,
+                        expirationDate,
+                        price,
+                        quantity,
+                        new OrderSubmitter(traderName, brokerName, sender, exchangeName)
+                );  // Zmieniony konstruktor
                 break;
             case "NOLIMIT":
-                disposition = new NoLimitExchangeOrder(symbol, orderType, expirationDate, quantity,
-                        new OrderSubmitter(traderName, brokerName, sender, exchangeName));  // Zmieniony konstruktor
+                disposition = new NoLimitExchangeOrder(
+                        symbol,
+                        orderType,
+                        expirationDate,
+                        quantity,
+                        new OrderSubmitter(traderName, brokerName, sender, exchangeName)
+                );  // Zmieniony konstruktor
                 break;
             case "STOP":
-                double activationPrice = orderSpec.getPrice();
-                disposition = new AwaitingExchangeOrder(new NoLimitExchangeOrder(symbol, orderType, expirationDate, quantity,
-                        new OrderSubmitter(traderName, brokerName, sender, exchangeName)), activationPrice);
+                disposition = new AwaitingExchangeOrder(
+                        new NoLimitExchangeOrder(
+                                symbol,
+                                orderType,
+                                expirationDate,
+                                quantity,
+                                new OrderSubmitter(traderName, brokerName, sender, exchangeName)
+                        ),
+                        activationPrice
+                );
                 break;
             case "STOPLIMIT":
-                price = orderSpec.getPrice();
-                activationPrice = orderSpec.getOrder().getPrice();
-                disposition = new AwaitingExchangeOrder(new ExchangeOrder(symbol, orderType, expirationDate, price, quantity,
-                        new OrderSubmitter(traderName, brokerName, sender, exchangeName)), activationPrice);
+                price = orderSpec.price();
+                activationPrice = orderSpec.order().getPrice();
+                disposition = new AwaitingExchangeOrder(
+                        new ExchangeOrder(
+                                symbol,
+                                orderType,
+                                expirationDate,
+                                price,
+                                quantity,
+                                new OrderSubmitter(traderName, brokerName, sender, exchangeName)
+                        ),
+                        activationPrice
+                );
                 break;
         }
 
@@ -143,7 +178,6 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
         commandObject.addProperty("traderName", traderName);
         commandObject.addProperty("brokerOrderId", brokerName);
         commandObject.add("arguments", new JsonArray());
-        Gson gson = new Gson();
         return gson.toJson(commandObject);
     }
 
@@ -156,10 +190,9 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
         if (arguments.size() != 1) {
             throw new IllegalArgumentException("GET_TOP_BUY requires a single parameter (stock short name).");
         }
-        String shortName = (String) arguments.get(0);
+        String shortName = (String) arguments.getFirst();
         StockSymbol stockSymbol = agent.getStockExchange().getSymbolByShortName(shortName);
         List<ExchangeOrder> orders = agent.getStockExchange().getTopBuyOffers(stockSymbol);
-        Gson gson = new Gson();
         return gson.toJson(orders);
     }
 
@@ -167,10 +200,9 @@ public class OrderProcessingBehaviour extends CyclicBehaviour {
         if (arguments.size() != 1) {
             throw new IllegalArgumentException("GET_TOP_SELL requires a single parameter (stock short name).");
         }
-        String shortName = (String) arguments.get(0);
+        String shortName = (String) arguments.getFirst();
         StockSymbol stockSymbol = agent.getStockExchange().getSymbolByShortName(shortName);
         List<ExchangeOrder> orders = agent.getStockExchange().getTopSellOffers(stockSymbol);
-        Gson gson = new Gson();
         return gson.toJson(orders);
     }
 

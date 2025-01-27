@@ -1,7 +1,7 @@
 package org.example.datamodels.order;
 
-public enum OrderType{
-    BUY,SELL;
+public enum OrderType {
+    BUY, SELL;
 
     public static OrderType fromString(String input) {
         if (input == null) {
