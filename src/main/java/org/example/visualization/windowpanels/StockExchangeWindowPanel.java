@@ -113,14 +113,14 @@ public class StockExchangeWindowPanel extends BaseWindowPanel<StockExchangeViewM
                     PLOT_WIDTH,
                     PLOT_HEIGHT);
 
-            Layout.drawText(g2, "Quantity history", PANEL_WIDTH / 2, TEXT_HEADING_HEIGHT + PLOT_HEIGHT + TEXT_HEADING_HEIGHT / 2);
-
-            StatisticalGraphics.plot2D(g2,
-                    history.stream().map(p -> (double)p.second()).toList().toArray(new Double[0]),
-                    PANEL_WIDTH / 2,
-                    PLOT_HEIGHT + 2 * TEXT_HEADING_HEIGHT,
-                    PLOT_WIDTH,
-                    PLOT_HEIGHT);
+//            Layout.drawText(g2, "Quantity history", PANEL_WIDTH / 2, TEXT_HEADING_HEIGHT + PLOT_HEIGHT + TEXT_HEADING_HEIGHT / 2);
+//
+//            StatisticalGraphics.plot2D(g2,
+//                    history.stream().map(p -> (double)p.second()).toList().toArray(new Double[0]),
+//                    PANEL_WIDTH / 2,
+//                    PLOT_HEIGHT + 2 * TEXT_HEADING_HEIGHT,
+//                    PLOT_WIDTH,
+//                    PLOT_HEIGHT);
         }
         catch (Exception e) {
             System.out.println(e.getMessage());
