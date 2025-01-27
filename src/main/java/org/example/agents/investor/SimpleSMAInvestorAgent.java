@@ -1,33 +1,45 @@
 package org.example.agents.investor;
 
 import jade.core.behaviours.TickerBehaviour;
+import jade.core.behaviours.WakerBehaviour;
 import org.example.datamodels.order.OrderType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 public class SimpleSMAInvestorAgent extends InvestorAgent {
 
     // Przechowywanie historii cen, aby ocenić trendy
     private final HashMap<InvestorPriceRecordLabel, List<Double>> priceHistory;
 
+    // Mapa przechowująca ilość posiadanych akcji dla każdego symbolu akcji
+    private HashMap<InvestorPriceRecordLabel, Long> ownedStocks;
+
     public SimpleSMAInvestorAgent() {
         super();
         priceHistory = new HashMap<>();
+        ownedStocks = new HashMap<>();
     }
 
     @Override
     protected void setup() {
         super.setup();
-        this.addBehaviour(new TickerBehaviour(this, 5000) {
+
+
+        this.addBehaviour(new WakerBehaviour(this, 0) { // Opóźnienie 3000 ms
             @Override
-            protected void onTick() {
-                makeDecision();
+            protected void onWake() {
+                this.getAgent().addBehaviour(new TickerBehaviour(this.getAgent(), 1000) {
+                    @Override
+                    protected void onTick() {
+                        makeDecision();
+                    }
+                });
             }
         });
     }
-
 
     protected void makeDecision() {
         for (InvestorPriceRecordLabel stock : observedStocks) {
@@ -40,30 +52,33 @@ public class SimpleSMAInvestorAgent extends InvestorAgent {
             }
             priceHistory.get(stock).add(lastPrice);
 
-
             if (priceHistory.get(stock).size() > 5) {
                 List<Double> history = priceHistory.get(stock);
-                Double averagePrice = history.stream().mapToDouble(d -> d).average().orElse(0.0);
-                double lastTrend = lastPrice - averagePrice;
+                Double averagePrice = history.stream().filter(Objects::nonNull).mapToDouble(d -> d).average().orElse(0.0);
+                Double lastTrend = lastPrice - averagePrice;
 
                 Double brokerBalance = getBalance("Broker1");
 
+                // Sprawdzamy ilość posiadanych akcji dla tego stocka
+                Long ownedQuantity = ownedStocks.getOrDefault(stock, 0L);
+
                 // Strategia: Kup, gdy cena jest poniżej średniej i mamy wystarczająco dużo gotówki
-                if (buyPrice != null && lastTrend < 0 && brokerBalance >= buyPrice) {
-                    Long quantity = (long) (brokerBalance / buyPrice);
-                    // Wpłacamy gotówkę na konto brokera, jeśli nie mamy wystarczających środków
-                    if (brokerBalance < buyPrice * quantity) {
-                        depositMoney("Broker1", buyPrice * quantity - brokerBalance);
+                if (buyPrice != null && buyPrice - averagePrice < 0 && brokerBalance + moneyBalance >= buyPrice) {
+                    Long quantity = (long) (((brokerBalance + moneyBalance) * 0.1) / buyPrice);
+                    if (brokerBalance < buyPrice*1.05 * quantity) {
+                        depositMoney("Broker1", buyPrice*1.05 * quantity - brokerBalance);
                     }
-                    sendMarketOrder(stock.shortName(), OrderType.BUY, buyPrice, quantity, "GPW", "Broker1");
+                    sendMarketOrder(stock.shortName(), OrderType.BUY, buyPrice*1.05, quantity, "GPW", "Broker1");
+                    ownedStocks.put(stock, ownedQuantity + quantity);
                     brokerBalance -= quantity * buyPrice;
                     System.out.println("Buying " + quantity + " of " + stock.shortName() + " at " + buyPrice);
                 }
+
                 // Strategia: Sprzedaj, gdy cena jest powyżej średniej i mamy akcje do sprzedaży
-                if (sellPrice != null && lastTrend > 0 && brokerBalance > 0) {
-                    Long quantity = (long) (brokerBalance / sellPrice);  // Załóżmy, że mamy akcje do sprzedaży
+                if (sellPrice != null && sellPrice - averagePrice > 0 && ownedQuantity > 0) {
+                    Long quantity = ownedQuantity;
                     sendMarketOrder(stock.shortName(), OrderType.SELL, sellPrice, quantity, "GPW", "Broker1");
-//                    brokerBalance += quantity * sellPrice; // Zwiększamy saldo na koncie brokera
+                    ownedStocks.put(stock, 0L);
                     System.out.println("Selling " + quantity + " of " + stock.shortName() + " at " + sellPrice);
                 }
             }

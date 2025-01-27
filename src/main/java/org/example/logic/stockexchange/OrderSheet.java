@@ -32,8 +32,10 @@ public class OrderSheet {
 
     static{
         ConsoleHandler consoleHandler = new ConsoleHandler();
-        consoleHandler.setLevel(Level.INFO); // Log messages at INFO level or higher
+        consoleHandler.setLevel(Level.OFF); // Log messages at INFO level or higher
         logger.addHandler(consoleHandler);
+        logger.setUseParentHandlers(false);
+
         try {
             FileHandler fileHandler = new FileHandler("orders.log", true); // Append to the log file
             fileHandler.setFormatter(new SimpleFormatter()); // Add a simple text formatter
@@ -59,6 +61,9 @@ public class OrderSheet {
     private final AgentWindow exchangeWindow;
 
     private ExchangeOrderingID lastId;
+
+    private Long sessionNumber;
+    private Long seconds;
 
     private record DefaultVisualizationListener<E>(OrderSheet orderSheet) implements QueueEventListener<E> {
         @Override
@@ -108,12 +113,23 @@ public class OrderSheet {
         lastId = ExchangeOrderingID.getZero();
     }
 
+    public PriceTracker getPriceTracker() {
+        return priceTracker;
+    }
     public StockSymbol getSymbol() {
         return symbol;
     }
 
     public AgentWindow getExchangeWindow() {
         return exchangeWindow;
+    }
+
+    public void setSessionNumber(Long sessionNumber) {
+        this.sessionNumber = sessionNumber;
+    }
+
+    public void setSeconds(Long seconds) {
+        this.seconds = seconds;
     }
 
     private void saveTransaction(BuyerSettlement buyerSettlement, SellerSettlement sellerSettlement) {
@@ -127,8 +143,9 @@ public class OrderSheet {
                 buyerSettlement.getUnitPrice(),
                 buyerSettlement.getQuantity(),
                 buyerSettlement.getAddressee(),
-                sellerSettlement.getAddressee()
-        );
+                sellerSettlement.getAddressee(),
+                this.sessionNumber,
+                this.seconds);
 
         updateExchangeWindow();
     }

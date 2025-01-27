@@ -28,12 +28,7 @@ public class StockExchangeAgent extends Agent {
 
         if (args != null && args.length > 0) {
             String exchangeName = (String) args[0];
-            stockExchange = new StockExchange(
-                    exchangeName,
-                    new ExchangeDate(),
-                    20 * 1000L,
-                    252L
-            );
+            stockExchange = new StockExchange(exchangeName, new ExchangeDate(),2*1000L,252L);
             System.out.println("StockExchangeAgent started: " + exchangeName);
             if (args.length > 1) {
                 Collection<StockSymbol> symbols = (Collection<StockSymbol>) args[1];
@@ -56,15 +51,9 @@ public class StockExchangeAgent extends Agent {
             System.out.println("StockExchangeAgent started: Default Exchange");
         }
 
-        addBehaviour(new TimeHandlingBehaviour(
-                this,
-                1000,
-                stockExchange.getMillisecondsPerSession(),
-                2000
-        ));
+        addBehaviour(new TimeHandlingBehaviour(this, 200, stockExchange.getMillisecondsPerSession(), 200));
         addBehaviour(new OrderProcessingBehaviour(this));
-        addBehaviour(new SettlementSendingBehaviour(this, 1000));
-        addBehaviour(new CancellationSendingBehaviour(this, 1000));
+        addBehaviour(new SettlementSendingBehaviour(this,200));
+        addBehaviour(new CancellationSendingBehaviour(this,200));
     }
-
 }

@@ -56,7 +56,7 @@ public class DummyAgent extends Agent {
 
         // Dodanie wiadomości do GPW
         for (String msg : messagesToGPW) {
-            behaviour.addSubBehaviour(new WakerBehaviour(this, 1000) { // Opóźnienie 1000 ms
+            behaviour.addSubBehaviour(new WakerBehaviour(this, 100) { // Opóźnienie 1000 ms
                 @Override
                 protected void onWake() {
                     sendMessageToGPW(gpwAgent, msg);
@@ -65,21 +65,21 @@ public class DummyAgent extends Agent {
         }
 
         // Dodanie wiadomości do brokera
-        behaviour.addSubBehaviour(new WakerBehaviour(this, 3000) { // Opóźnienie 3000 ms
+        behaviour.addSubBehaviour(new WakerBehaviour(this, 300) { // Opóźnienie 3000 ms
             @Override
             protected void onWake() {
                 sendMessageToBroker(brokerAgent, bcf.register().getJsonCommand());
             }
         });
 
-        behaviour.addSubBehaviour(new WakerBehaviour(this, 4000) { // Opóźnienie 4000 ms
+        behaviour.addSubBehaviour(new WakerBehaviour(this, 400) { // Opóźnienie 4000 ms
             @Override
             protected void onWake() {
                 sendMessageToBroker(brokerAgent, bcf.deposit(5000.0).getJsonCommand());
             }
         });
 
-        behaviour.addSubBehaviour(new WakerBehaviour(this, 5000) { // Opóźnienie 5000 ms
+        behaviour.addSubBehaviour(new WakerBehaviour(this, 500) { // Opóźnienie 5000 ms
             @Override
             protected void onWake() {
                 sendMessageToBroker(brokerAgent, bcf.marketOrder(
